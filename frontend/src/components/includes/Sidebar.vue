@@ -11,9 +11,23 @@ const drawer = ref(true); // true = visible by default
       <v-list-item prepend-icon="mdi-home">
         <v-list-item-title>Home</v-list-item-title>
       </v-list-item>
-
-      <v-list-item prepend-icon="mdi-chart-line">
-        <v-list-item-title>Dashboard</v-list-item-title>
+      <v-list-item prepend-icon="mdi-calendar-week">
+        <v-list-item-title>Events</v-list-item-title>
+      </v-list-item>
+      <v-list-item prepend-icon="mdi-newspaper">
+        <v-list-item-title>Articles</v-list-item-title>
+      </v-list-item>
+      <v-list-item prepend-icon="mdi-account-group">
+        <v-list-item-title>Forums</v-list-item-title>
+      </v-list-item>
+      <v-list-item prepend-icon="mdi-cart">
+        <v-list-item-title>MarketPlace</v-list-item-title>
+      </v-list-item>
+      <v-list-item prepend-icon="mdi-comment-account-outline">
+        <v-list-item-title>Feedback</v-list-item-title>
+      </v-list-item>
+      <v-list-item prepend-icon="mdi-account">
+        <v-list-item-title>myProfile</v-list-item-title>
       </v-list-item>
 
       <v-list-item prepend-icon="mdi-cog">
