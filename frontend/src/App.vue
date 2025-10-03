@@ -2,6 +2,8 @@
 import { ref, provide } from "vue";
 import Header from "./components/includes/Header.vue";
 import Sidebar from "./components/includes/Sidebar.vue";
+import Dashboard from "./components/pages/Dashboard.vue";
+import Login from "./components/pages/Login.vue";
 
 const drawer = ref(true); // state shared between header + sidebar
 
@@ -18,9 +20,7 @@ provide("toggleSidebar", toggleSidebar);
     <Sidebar v-model="drawer" />
 
     <v-main>
-      <v-container>
-        <h3>Hello there</h3>
-      </v-container>
+      <router-view/>
     </v-main>
   </v-app>
 </template>
