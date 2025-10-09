@@ -15,7 +15,7 @@ provide("toggleSidebar", toggleSidebar);
 </script>
 
 <template>
-  <v-app>
+  <v-app class="bg-green">
     <Header />
     <Sidebar v-model="drawer" />
 
@@ -24,3 +24,6 @@ provide("toggleSidebar", toggleSidebar);
     </v-main>
   </v-app>
 </template>
+<style scoped>
+
+</style>
