@@ -7,6 +7,8 @@ const darkTheme= ref(false)
 const toggleTheme= ()=>{
   darkTheme.value =!darkTheme.value
 }
+
+
 </script>
 
 <template>
@@ -14,7 +16,7 @@ const toggleTheme= ()=>{
     <!-- clicking this will toggle sidebar -->
     <v-app-bar-nav-icon @click="toggleSidebar" />
 
-    <v-app-bar-title>CoopConnect</v-app-bar-title>
+    <v-app-bar-title class="cursor-pointer" @click="$router.push('/')">CoopConnect</v-app-bar-title>
     <v-spacer/>
     <v-text-field
       prepend-inner-icon="mdi-magnify"
