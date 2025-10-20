@@ -32,6 +32,10 @@
                 @click:append-inner="showPassword = !showPassword"
                 />
             </v-card-text>
+            <v-card-action>
+                <span>Don't have an account? </span>
+                <v-btn variant="outlined" >Register</v-btn>
+            </v-card-action>
 
         </v-card>
 </v-container>
