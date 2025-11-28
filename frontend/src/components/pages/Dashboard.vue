@@ -91,7 +91,7 @@ const highlights = [
     </v-row>
 
     <!-- Recent Activities Section -->
-    <v-card class="mt-8 pa-4" elevation="5" rounded="lg">
+    <v-card class="mt-8 pa-4" elevation="5" rounded="xl">
       <v-card-title class="text-h6 mb-3">Recent Activities Feed</v-card-title>
       <v-divider></v-divider>
       <v-list>

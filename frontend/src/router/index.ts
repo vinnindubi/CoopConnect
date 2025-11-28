@@ -1,8 +1,10 @@
 import {createRouter,createWebHistory} from 'vue-router';
 import Dashboard from '@/components/pages/Dashboard.vue'
 import Login from '@/components/pages/Login.vue'
+import AdminDashboard from '@/components/pages/admin/AdminDashboard.vue';
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
 import AuthLayout from '@/layouts/AuthLayout.vue';
+import AdminLayout from '@/layouts/AdminLayout.vue';
 const routes=[{
     path:'/',
     component:DefaultLayout,
@@ -23,6 +25,13 @@ const routes=[{
             { path:'/login',name:'Login',component:Login}
         ]
 
+    },
+    {
+        path:'/admin',
+        component:AdminLayout,
+        children:[
+            {path:'/admin',name:'admin',component:AdminDashboard}
+        ]
     }
 ]
 
