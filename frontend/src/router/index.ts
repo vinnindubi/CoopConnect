@@ -1,6 +1,7 @@
 import {createRouter,createWebHistory} from 'vue-router';
-import Dashboard from '@/components/pages/Dashboard.vue'
-import Login from '@/components/pages/Login.vue'
+import Profile from '@/components/pages/users/Profile.vue';
+import Dashboard from '@/components/pages/users/Dashboard.vue'
+import Login from '@/components/pages/users/Login.vue'
 import AdminDashboard from '@/components/pages/admin/AdminDashboard.vue';
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
 import AuthLayout from '@/layouts/AuthLayout.vue';
@@ -14,7 +15,7 @@ const routes=[{
         {path:'/forums',name:'Forums'},
         {path:'/marketplace',name:'Marketplace'},
         {path:'/feedback',name:'Feedback'},
-        {path:'/profile',name:'Profile'},
+        {path:'/profile',name:'Profile',component:Profile},
         {path:'/settings',name:'Settings'},
     ]
     },
