@@ -6,6 +6,8 @@ import AdminDashboard from '@/components/pages/admin/AdminDashboard.vue';
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
 import AuthLayout from '@/layouts/AuthLayout.vue';
 import AdminLayout from '@/layouts/AdminLayout.vue';
+import EditProfile from '@/components/pages/forms/EditProfile.vue';
+import Register from '@/components/pages/users/Register.vue';
 const routes=[{
     path:'/',
     component:DefaultLayout,
@@ -17,6 +19,7 @@ const routes=[{
         {path:'/feedback',name:'Feedback'},
         {path:'/profile',name:'Profile',component:Profile},
         {path:'/settings',name:'Settings'},
+        {path:'/editprofile',name:'EditProfile',component:EditProfile}
     ]
     },
     {
@@ -26,6 +29,13 @@ const routes=[{
             { path:'/login',name:'Login',component:Login}
         ]
 
+    },
+    {
+        path:'/register',
+        component:AuthLayout,
+        children:[
+            { path:'/register',name:'register',component:Register}
+        ]
     },
     {
         path:'/admin',

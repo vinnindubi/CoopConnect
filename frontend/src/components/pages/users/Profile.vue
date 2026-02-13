@@ -40,11 +40,11 @@
         
     </v-row>
 </v-card>
-<div class="pa-4" style="position: sticky; bottom: 0; background: white;">
+<div class="pa-4 d-flex justify-center mt-2" style="position: sticky; bottom: 0; background: white;">
   <v-btn 
-    color="primary" 
-    block
+    color="success" 
     size="large"
+    to="/editprofile"
   >
     Edit Profile
   </v-btn>
