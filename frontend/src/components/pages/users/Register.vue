@@ -1,13 +1,15 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, reactive } from 'vue';
 import {useRouter} from 'vue-router'
 
 // -- Form State --
-const fullName = ref('');
-const admNumber = ref('');
-const email = ref('');
-const password = ref('');
-const confirmPassword = ref('');
+const formData= reactive({
+  fullname:'',
+  admNumber:'',
+  email:'',
+  password:'',
+  confirmPassword:''
+});
 const agreeToTerms = ref(false);
 const showPassword = ref(false);
 const router= useRouter();
@@ -18,22 +20,23 @@ const rules = {
   required: (value: string) => !!value || 'Required.',
   email: (value: string) => /.+@.+\..+/.test(value) || 'E-mail must be valid.',
   min: (value: string) => value.length >= 8 || 'Min 8 characters',
-  match: (value: string) => value === password.value || 'Passwords must match',
+  match: (value: string) => value === formData.password || 'Passwords must match',
 };
 
 // -- Submit Logic --
 const loading = ref(false);
+const isFormValid = ref(false)
 
-const handleRegister = () => {
-  if (!agreeToTerms.value)   return;
+const handleRegister = async () => {
+  if (!isFormValid.value ||!agreeToTerms.value)   return;
   
   loading.value = true;
   // Simulate an API call
   setTimeout(() => {
     console.log("Registering:", { 
-      name: fullName.value, 
-      adm: admNumber.value, 
-      email: email.value 
+      name: formData.fullname, 
+      adm: formData.admNumber, 
+      email: formData.email 
     });
     loading.value = false;
     router.push('/')
@@ -66,12 +69,12 @@ const handleRegister = () => {
           <v-card class="rounded-xl elevation-10 border-opacity-50" border>
             <div class="pa-8">
               
-              <v-form @submit.prevent="handleRegister">
+              <v-form v-model="isFormValid" @submit.prevent="handleRegister">
                 
                 <div class="mb-3">
                   <label class="text-caption font-weight-bold text-grey-darken-2 mb-1 d-block">Full Name</label>
                   <v-text-field
-                    v-model="fullName"
+                    v-model="formData.fullname"
                     :rules="[rules.required]"
                     placeholder="e.g., John Doe"
                     variant="outlined"
@@ -87,7 +90,7 @@ const handleRegister = () => {
                     <div class="mb-3">
                       <label class="text-caption font-weight-bold text-grey-darken-2 mb-1 d-block">Admission No.</label>
                       <v-text-field
-                        v-model="admNumber"
+                        v-model="formData.admNumber"
                         :rules="[rules.required]"
                         placeholder="e.g., BITC01/..."
                         variant="outlined"
@@ -102,7 +105,7 @@ const handleRegister = () => {
                      <div class="mb-3">
                       <label class="text-caption font-weight-bold text-grey-darken-2 mb-1 d-block">Student Email</label>
                       <v-text-field
-                        v-model="email"
+                        v-model="formData.email"
                         :rules="[rules.required, rules.email]"
                         placeholder="student@cuk.ac.ke"
                         variant="outlined"
@@ -118,7 +121,7 @@ const handleRegister = () => {
                 <div class="mb-3">
                   <label class="text-caption font-weight-bold text-grey-darken-2 mb-1 d-block">Password</label>
                   <v-text-field
-                    v-model="password"
+                    v-model="formData.password"
                     :rules="[rules.required, rules.min]"
                     placeholder="Min 8 characters"
                     variant="outlined"
@@ -135,7 +138,7 @@ const handleRegister = () => {
                 <div class="mb-1">
                   <label class="text-caption font-weight-bold text-grey-darken-2 mb-1 d-block">Confirm Password</label>
                   <v-text-field
-                    v-model="confirmPassword"
+                    v-model="formData.confirmPassword"
                     :rules="[rules.required, rules.match]"
                     placeholder="Re-enter password"
                     variant="outlined"
@@ -169,8 +172,7 @@ const handleRegister = () => {
                   elevation="2"
                   height="48"
                   :loading="loading"
-                  :disabled="!agreeToTerms"
-                  
+                  :disabled="!isFormValid || !agreeToTerms"
                 >
                   Create Account
                 </v-btn>
@@ -189,20 +191,3 @@ const handleRegister = () => {
     </v-main>
   </v-app>
 </template>
-
-<style scoped>
-/* Re-using the same blur effects */
-.bg-background-light { background-color: #f8f7f6 !important; }
-
-.visual-accent-top {
-  position: fixed; top: -128px; right: -128px; width: 256px; height: 256px;
-  background-color: rgba(236, 127, 19, 0.05);
-  border-radius: 50%; filter: blur(64px); z-index: 0;
-}
-
-.visual-accent-bottom {
-  position: fixed; bottom: -192px; left: -192px; width: 384px; height: 384px;
-  background-color: rgba(236, 127, 19, 0.1);
-  border-radius: 50%; filter: blur(64px); z-index: 0;
-}
-</style>

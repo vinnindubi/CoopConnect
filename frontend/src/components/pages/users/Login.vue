@@ -6,11 +6,21 @@ const password = ref('');
 const rememberMe = ref(false);
 const showPassword = ref(false);
 const router= useRouter();
-
+const loading = ref(false);
+const rules={
+  min: (value: string) => value.length >= 8 || 'Min 8 characters',
+  email: (value: string) => /.+@.+\..+/.test(value) || 'E-mail must be valid.',
+}
+const isFormValid = ref(false);
 // Logic to handle the login
-const handleLogin = () => {
+const handleLogin = async () => {
+  if (!isFormValid.value)     return;
   console.log("Logging in...", { email: email.value, password: password.value });
-  router.push('/');
+  loading.value= true;
+  setTimeout(() => {
+    loading.value = false;
+    router.push('/')
+  }, 1500);
 };
 </script>
 
@@ -40,18 +50,19 @@ const handleLogin = () => {
             <p class="text-body-2 text-grey-darken-1 mt-1">The Co-operative University of Kenya</p>
           </div>
 
-          <v-card class="rounded-xl elevation-10 border-opacity-50" border>
+          <v-card class="rounded-xl elevation-10 border-opacity-50 " >
             <div class="pa-8">
               <div class="mb-6">
                 <h2 class="text-h6 font-weight-bold text-grey-darken-3">Welcome Back</h2>
                 <p class="text-caption text-grey-darken-1">Please sign in to access your student portal</p>
               </div>
 
-              <v-form @submit.prevent="handleLogin">
+              <v-form  v-model="isFormValid" @submit.prevent="handleLogin">
                 <div class="mb-4">
                   <label class="text-caption font-weight-bold text-grey-darken-2 mb-1 d-block">Student Email or Username</label>
                   <v-text-field
                     v-model="email"
+                    :rules="[rules.email]"
                     placeholder="e.g., student@cuk.ac.ke"
                     variant="outlined"
                     prepend-inner-icon="mdi-email-outline"
@@ -66,6 +77,7 @@ const handleLogin = () => {
                   <label class="text-caption font-weight-bold text-grey-darken-2 mb-1 d-block">Password</label>
                   <v-text-field
                     v-model="password"
+                    :rules="[rules.min]"
                     placeholder="••••••••"
                     variant="outlined"
                     prepend-inner-icon="mdi-lock-outline"
@@ -100,7 +112,9 @@ const handleLogin = () => {
                   size="large"
                   class="text-uppercase font-weight-bold letter-spacing-1 rounded-lg"
                   elevation="2"
+                  :loading= "loading"
                   height="48"
+                  :disabled = "!isFormValid"
                 >
                   Sign In
                 </v-btn>
@@ -125,43 +139,3 @@ const handleLogin = () => {
     </v-main>
   </v-app>
 </template>
-
-<style>
-/* 1. Import the Font */
-@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap');
-
-/* 2. Global Font Apply */
-.v-application {
-  font-family: 'Lexend', sans-serif !important;
-}
-
-/* 3. Custom Colors matching your design */
-.bg-background-light {
-  background-color: #f8f7f6 !important;
-}
-
-/* 4. The Visual Blurs (Accents) */
-.visual-accent-top {
-  position: fixed;
-  top: -128px;
-  right: -128px;
-  width: 256px;
-  height: 256px;
-  background-color: rgba(236, 127, 19, 0.05); /* Primary color low opacity */
-  border-radius: 50%;
-  filter: blur(64px);
-  z-index: 0;
-}
-
-.visual-accent-bottom {
-  position: fixed;
-  bottom: -192px;
-  left: -192px;
-  width: 384px;
-  height: 384px;
-  background-color: rgba(236, 127, 19, 0.1);
-  border-radius: 50%;
-  filter: blur(64px);
-  z-index: 0;
-}
-</style>
