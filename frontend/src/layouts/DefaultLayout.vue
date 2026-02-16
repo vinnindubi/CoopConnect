@@ -13,7 +13,7 @@ provide("toggleSidebar", toggleSidebar);
 </script>
 
 <template>
-  <v-app class="bg-white">
+  <v-app >
     <Header />
     <Sidebar v-model="drawer" />
 

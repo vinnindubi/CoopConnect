@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-
+import {theme} from '@/includes\Header.vue'
 // --- Dummy Data 
 const marketplaceItems = ref([
   {
@@ -186,9 +186,9 @@ const feedPosts = ref([
 
         <div v-for = "post in feedPosts" :key="post.id" class="d-flex flex-column gap-6">
           <v-card v-if="post.isImagePost" class="rounded-xl elevation-2 border-opacity-50 mb-6 overflow-hidden" border>
-      <div class="d-flex flex-row" style="height: 100%;">
+      <div class="d-flex flex-column flex-sm-row h-100"" style="height: 100%;">
         
-        <div style="width: 240px; min-width: 240px;" class="bg-grey-lighten-4 ">
+        <div class="post-image-container ">
           <v-img
             :src="post.image"
             :alt="post.title"
@@ -250,79 +250,13 @@ const feedPosts = ref([
         </div>
       </div>
     </v-card>          
-         
-          <!-- <v-card class="rounded-xl elevation-2 border-opacity-50" border>
-            <v-img
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuAlNtJdaBpQVgZ7bSlVvvIsYSBNwZO3vLSmQKibmMWQskkf4sx7pZ0XV7VxkcJnf2s86YOWchhNfpl9w8zTTFaneddpgBbgh7mJwnXoB6BBUYiqclMwY4aOxw2ziysQ1-W4JBCd-tyPPsjp1gktQuC1uISbfeDQcZTVIpHdPCKvnlYJSNtPMQeWJlG3PEaicWB2wAUHZhbNz0Lx_1QMjSPOAjciDNrB8w240XDvMPDtDxofx60tpcyrLFox4Lbwo2abLIxyb4OUUFk"
-              alt="Library Update"
-              height="250"
-              cover
-            ></v-img>
-            
-            <div class="pa-6">
-              <div class="d-flex align-center mb-3 gap-2">
-                <v-chip color="primary" size="small" variant="tonal" class="text-uppercase font-weight-bold rounded">
-                  Academic
-                </v-chip>
-                <span class="text-caption text-grey-darken-1">Today at 9:00 AM</span>
-              </div>
-              
-              <h3 class="text-h5 font-weight-bold mb-2">Library Hours Extended for Exams Week</h3>
-              <p class="text-body-2 text-grey-darken-2 mb-4">
-                To support your revision efforts, the University Library will remain open 24/7 starting this Monday until the end of the semester examination period.
-              </p>
-              
-              <v-divider class="my-4"></v-divider>
-              
-              <div class="d-flex align-center justify-space-between">
-                <div class="d-flex align-center stacked-avatars">
-                  <v-avatar size="32" class="border-white" image="https://lh3.googleusercontent.com/aida-public/AB6AXuD2pHk35mYTDPutwEtWbbW00A1xZyHTIPVUJwgRdHLc6n6XGDOg5cjOJcSavoVmQSIhwnOT7Y2OCSoHrGhLHPCkHm0JWnBICO9zx7Y4imM1dqdyIaXzn5MMCnSW2hM9wH_7ZXx_RZnIibA_a8_WobcYC8feg2O-q78XsKwwYGXGIoCKdI97SAVx-7w1NfnB9T-OTOvRAZowhpLljRh2mpCPqVMqIH-kM_c_PYbXquLy_XsRCE1iZ_txwU6olma9svigPQNEKNuJELY"></v-avatar>
-                  <v-avatar size="32" class="border-white" image="https://lh3.googleusercontent.com/aida-public/AB6AXuDEZ4FcC3PaNtuGiWBbjeM0tyhyaxXBLrsEGJzJDPyK-gNPnHhnisHYkJaImg1UA_SlbULHdylQTimbXDG4zwlwPSHbEJ5BJoIfImpyoPh3bVLegyK24uNSPrnfdpBHJVg11aQ3gew-btGOlQaJ8Rp3v_UgYengMnrHuuxXwR9Ja9NYnOtYzvJH6j5iduyk5vI_sEOhajlBHmCX_tY_2Nkx4hTe6elGgh7RlFXMcrhyucCwqEy7lai0OW10_tWkl2IOyKY-oSM0CdI"></v-avatar>
-                  <v-avatar size="32" class="border-white bg-grey-lighten-3 text-caption font-weight-bold text-grey-darken-2">
-                    +42
-                  </v-avatar>
-                </div>
-                
-                <v-btn variant="text" color="grey-darken-1" prepend-icon="mdi-share-variant-outline" class="text-none">
-                  Share
-                </v-btn>
-              </div>
-            </div>
-          </v-card>
-          <v-card class="rounded-xl elevation-2 pa-6 border-opacity-50" border>
-            <div class="d-flex gap-4">
-              <div class="d-flex align-center justify-center rounded-lg bg-blue-lighten-5 shrink-0" style="width: 64px; height: 64px;">
-                <v-icon icon="mdi-soccer" color="blue-darken-2" size="32"></v-icon>
-              </div>
-              
-              <div class="flex-grow-1">
-                <div class="d-flex align-center mb-1 gap-2">
-                  <v-chip color="blue-darken-2" size="small" variant="tonal" class="text-uppercase font-weight-bold rounded">
-                    Athletics
-                  </v-chip>
-                  <span class="text-caption text-grey-darken-1">Yesterday</span>
-                </div>
-                
-                <h3 class="text-h6 font-weight-bold">Inter-Faculty Tournament Registration</h3>
-                <p class="text-body-2 text-grey-darken-1 mt-1">
-                  Registration for Football, Basketball, and Volleyball is now open at the Sports Office.
-                </p>
-                
-                <v-btn color="grey-darken-4" size="small" class="text-none font-weight-bold mt-4 rounded-lg px-4">
-                  Register Team
-                </v-btn>
-              </div>
-            </div>
-          </v-card> -->
-
         </div>
       </v-col>
 
       <v-col cols="12" lg="4">
         <div class="d-flex sticky-sidebar flex-column gap-6">
-
           <v-card class="rounded-xl elevation-2 border-opacity-50" border>
-            <div class="d-flex justify-space-between align-center pa-4 bg-grey-lighten-4 border-bottom">
+            <div class="d-flex justify-space-between align-center pa-4 bg-surface-variant border-bottom">
               <div class="text-subtitle-2 font-weight-bold d-flex align-center gap-2">
                 <v-icon icon="mdi-shopping-outline" color="primary" size="small"></v-icon>
                 Marketplace
@@ -355,7 +289,7 @@ const feedPosts = ref([
           </v-card>
 
           <v-card class="rounded-xl elevation-2 border-opacity-50" border>
-             <div class="d-flex justify-space-between align-center pa-4 bg-grey-lighten-4 border-bottom">
+             <div class="d-flex justify-space-between align-center pa-4 bg-surface-variant border-bottom">
               <div class="text-subtitle-2 font-weight-bold d-flex align-center gap-2">
                 <v-icon icon="mdi-calendar-outline" color="primary" size="small"></v-icon>
                 Upcoming Clubs
@@ -371,7 +305,7 @@ const feedPosts = ref([
                 <div 
                   class="d-flex flex-column align-center justify-center rounded-xl border shrink-0" 
                   style="width: 48px; height: 56px;"
-                  :class="event.highlight ? 'bg-orange-lighten-5 border-orange-lighten-3' : 'bg-grey-lighten-4 border-grey-lighten-2'"
+                  :class="event.highlight ? 'bg-orange-lighten-5 border-orange-lighten-3' : 'bg-surface-variant border-grey-lighten-2'"
                 >
                   <span class="text-uppercase font-weight-bold" style="font-size: 10px;" :class="event.highlight ? 'text-primary' : 'text-grey-darken-1'">
                     {{ event.month }}
@@ -420,7 +354,7 @@ const feedPosts = ref([
 </template>
 
 <style scoped>
-/* 1. Spacing Helpers */
+/* 1. Spacing */
 .gap-1 { gap: 4px; }
 .gap-2 { gap: 8px; }
 .gap-3 { gap: 12px; }
@@ -501,5 +435,18 @@ const feedPosts = ref([
 .sticky-sidebar {
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
+}
+.post-image-container{
+  width: 100%;
+  height: 200px;
+  min-height: 200px;
+}
+@media(min-width:600px){
+  .post-image-container{
+    width:240px !important;
+    min-width:240px;
+    height:auto;
+    min-height: 100%;
+  }
 }
 </style>
