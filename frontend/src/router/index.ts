@@ -8,18 +8,23 @@ import AuthLayout from '@/layouts/AuthLayout.vue';
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import EditProfile from '@/components/pages/forms/EditProfile.vue';
 import Register from '@/components/pages/users/Register.vue';
+import Events from '@/components/pages/users/Events.vue';
+import Forum from '@/components/pages/users/Forum.vue';
+import Feedback from '@/components/pages/forms/Feedback.vue';
+import MarketPlace from '@/components/pages/users/MarketPlace.vue';
+import Settings from '@/components/pages/users/Settings.vue';
 const routes=[{
     path:'/',
     component:DefaultLayout,
     children:[ {path:'/',name:'Home',component:Dashboard},
-        {path:'/events',name:'Events',component:Event},
-        // {path:'/articles',name:'Articles'}, typescript enforces need for component. ensure you put it.
-        // {path:'/forums',name:'Forums'},
-        // {path:'/marketplace',name:'Marketplace'},
-        // {path:'/feedback',name:'Feedback'},
-        {path:'/profile',name:'Profile',component:Profile},
-        // {path:'/settings',name:'Settings'},
-        {path:'/editprofile',name:'EditProfile',component:EditProfile}
+        {path:'events',name:'Events',component:Events},
+        {path:'articles',name:'Articles',component: Events}, //typescript enforces need for component. ensure you put it.
+        {path:'forums',name:'Forums',component:Forum},
+        {path:'marketplace',name:'Marketplace',component:MarketPlace},
+        {path:'feedback',name:'Feedback',component:Feedback},
+        {path:'profile',name:'Profile',component:Profile},
+        {path:'settings',name:'Settings',component: Settings},
+        {path:'editprofile',name:'EditProfile',component:EditProfile}
     ]
     },
     {
