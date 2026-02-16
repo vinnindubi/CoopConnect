@@ -1,7 +1,7 @@
 <script lang="ts">
 </script>
 <template>
-    <v-app class="bg-grey">
+    <v-app >
         <v-main>
             <RouterView></RouterView>
         </v-main>

@@ -57,7 +57,7 @@ const handleRegister = async () => {
           <div class="text-center mb-6">
              <v-avatar size="80" class="elevation-1 mb-3 bg-white" style="border: 2px solid rgba(236, 127, 19, 0.1);">
               <v-img 
-                src="public\cuk_logo.png" 
+                src="/cuk_logo.png" 
                 alt="University Logo" 
                 cover
               ></v-img>

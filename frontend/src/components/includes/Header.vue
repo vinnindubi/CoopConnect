@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref ,inject } from "vue";
 import { useTheme } from "vuetify";
-import { teal } from "vuetify/util/colors";
 // get sidebar toggle function from App.vue
 const toggleSidebar = inject("toggleSidebar") as () => void;
 const darkTheme= ref(false)

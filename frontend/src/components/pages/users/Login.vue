@@ -38,7 +38,7 @@ const handleLogin = async () => {
             <div class="d-inline-flex align-center justify-center rounded-circle bg-white elevation-1 mb-4" 
                  style="width: 96px; height: 96px; border: 2px solid rgba(236, 127, 19, 0.1);">
               <v-img 
-                src="public\cuk_logo.png" 
+                src="/cuk_logo.png" 
                 alt="University Logo"
                 width="96"
                 height="96"
