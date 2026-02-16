@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import {theme} from '@/includes\Header.vue'
 // --- Dummy Data 
 const marketplaceItems = ref([
   {
