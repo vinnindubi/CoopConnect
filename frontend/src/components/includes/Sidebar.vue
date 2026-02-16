@@ -6,7 +6,7 @@ const drawer = ref(true); // true = visible by default
 </script>
 
 <template> 
-  <v-navigation-drawer v-model="drawer" app class="bg-black">
+  <v-navigation-drawer v-model="drawer" app >
     <v-list>
       <v-list-item prepend-icon="mdi-home" to="/">
         <v-list-item-title>Home</v-list-item-title>
