@@ -16,7 +16,8 @@ import Settings from '@/components/pages/users/Settings.vue';
 const routes=[{
     path:'/',
     component:DefaultLayout,
-    children:[ {path:'/',name:'Home',component:Dashboard},
+    children:[ 
+        {path:'/',name:'Home',component:Dashboard},
         {path:'events',name:'Events',component:Events},
         {path:'articles',name:'Articles',component: Events}, //typescript enforces need for component. ensure you put it.
         {path:'forums',name:'Forums',component:Forum},
