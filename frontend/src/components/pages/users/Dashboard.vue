@@ -132,7 +132,7 @@ const feedPosts = ref([
     iconBg: 'red-lighten-5',
     timestamp: 'Yesterday at 10:00 AM',
     title: 'Fee Balance Clearance Deadline',
-    content: 'A gentle reminder to all students to clear their semester fee balances by the 20th of February to avoid missing out on the upcoming continuous assessments (CATs).',
+    content: 'A gentle reminder to all students to clear their semester fee balances by the 20th of February to avoid missing out on the upcoming end of semester examinations.',
     actionText: 'Pay via Portal',
     actionColor: 'red-darken-2'
   },
@@ -144,7 +144,7 @@ const feedPosts = ref([
     timestamp: 'Yesterday at 4:30 PM',
     title: 'Environmental Club Tree Planting Drive',
     content: 'Join us this Saturday as we plant 500 trees around the Karen campus boundary. T-shirts and refreshments will be provided to all student volunteers.',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB-Ai0qcZuy-DyVFVtQ-lQRF3b0i_5XE8yNHSnAcoMX5LBmFELPK69YOxjbMwi9KqPYGxdo0lDvkmlQoG7R9C3Ho0HplU0eMkA_mB52SeSNwhWGEgFHgR4JQQc1priBVVEjmf_l-qVIT353ltqxdg10yCPkw6F-pOBrsBjNivTO9L2JxmRjAYhpIbzDY0p1nICjfXU94iufOgv4vCNvxqaKUhg58u8z0yHVa2FHmKNzbvMqoJpbRJwzj_MspJu_rjxebc6jlKdXy1U', 
+    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRZJ-jiM1t4jlzdMEMP_5zSIuGlohLsU1RPxA&s', 
     avatars: [
       'https://lh3.googleusercontent.com/aida-public/AB6AXuD2pHk35mYTDPutwEtWbbW00A1xZyHTIPVUJwgRdHLc6n6XGDOg5cjOJcSavoVmQSIhwnOT7Y2OCSoHrGhLHPCkHm0JWnBICO9zx7Y4imM1dqdyIaXzn5MMCnSW2hM9wH_7ZXx_RZnIibA_a8_WobcYC8feg2O-q78XsKwwYGXGIoCKdI97SAVx-7w1NfnB9T-OTOvRAZowhpLljRh2mpCPqVMqIH-kM_c_PYbXquLy_XsRCE1iZ_txwU6olma9svigPQNEKNuJELY',
       'https://lh3.googleusercontent.com/aida-public/AB6AXuB9If3y41wUUIdryqe5fRWQ2zV0tfjxeBMRC56RyjlkS-IsHmT6GVDw5W6Z0tjgGHITvQAzXv0WsrJDVaxoYrTnDdjCcJoX3HMEjxJrjONsfbOX8Km4vyUSYflwkI3i9Yu3wV2g8u05dyaIHk2U5BGJEBPkEzT8Wjbxe274lX0ZdxaJZLPS28ei4ZZD4UT15kBdTFMi36qc1mG0QArYdsoUHvwC8EH2i2EzPdxD3AuQ5QBLJd4qEV1G3bPWHtITyENm4f3ZpTHoqfk'
@@ -164,11 +164,10 @@ const feedPosts = ref([
             <div class="pulsing-dot bg-primary"></div>
             <h2 class="text-h6 font-weight-bold text-grey-darken-4">Happening Now</h2>
           </div>
-          <v-btn variant="text" color="primary" size="small" class="text-none font-weight-bold">
-            View All News
+          <v-btn variant="text" color="primary" size="small" class="text-none font-weight-bold" prepend-icon="mdi-filter">
+            Filter
           </v-btn>
         </div>
-
         <v-alert
           variant="tonal"
           color="error"
@@ -186,35 +185,47 @@ const feedPosts = ref([
         </v-alert>
 
         <div v-for = "post in feedPosts" :key="post.id" class="d-flex flex-column gap-6">
-          <v-card v-if="post.isImagePost" class="rounded-xl elevation-2 border-opacity-50 mb-6" border>
-                  <v-img :src="post.image" :alt="post.title" height="250" cover></v-img>
-            
-            <div class="pa-6">
-              <div class="d-flex align-center mb-3 gap-2">
-                <v-chip :color="post.categoryColor" size="small" variant="tonal" class="text-uppercase font-weight-bold rounded">
-                  {{ post.category }}
-                </v-chip>
-                <span class="text-caption text-grey-darken-1">{{ post.timestamp }}</span>
-              </div>
-              
-              <h3 class="text-h5 font-weight-bold mb-2">{{ post.title }}</h3>
-              <p class="text-body-2 text-grey-darken-2 mb-4">{{ post.content }}</p>
-              
-              <v-divider class="my-4"></v-divider>
-              
-              <div class="d-flex align-center justify-space-between">
-                <div class="d-flex align-center stacked-avatars">
-                  <v-avatar v-for="(avatar, index) in post.avatars" :key="index" size="32" class="border-white" :image="avatar"></v-avatar>
-                  <v-avatar size="32" class="border-white bg-grey-lighten-3 text-caption font-weight-bold text-grey-darken-2">
-                    {{ post.interactionCount }}
-                  </v-avatar>
-                </div>
-                <v-btn variant="text" color="grey-darken-1" prepend-icon="mdi-share-variant-outline" class="text-none">
-                  {{ post.actionText }}
-                </v-btn>
-              </div>
+          <v-card v-if="post.isImagePost" class="rounded-xl elevation-2 border-opacity-50 mb-6 overflow-hidden" border>
+      <div class="d-flex flex-row" style="height: 100%;">
+        
+        <div style="width: 240px; min-width: 240px;" class="bg-grey-lighten-4 ">
+          <v-img
+            :src="post.image"
+            :alt="post.title"
+            height="100%"
+            rounded="xl"
+            cover
+          ></v-img>
+        </div>
+
+        <div class="d-flex flex-column justify-space-between pa-6 flex-grow-1">
+          <div>
+            <div class="d-flex align-center mb-3 gap-2">
+              <v-chip :color="post.categoryColor" size="small" variant="tonal" class="text-uppercase font-weight-bold rounded">
+                {{ post.category }}
+              </v-chip>
+              <span class="text-caption text-grey-darken-1">{{ post.timestamp }}</span>
             </div>
-    </v-card>
+
+            <h3 class="text-h6 font-weight-bold mb-2 line-clamp-2">{{ post.title }}</h3>
+            <p class="text-body-2 text-grey-darken-2 mb-4 line-clamp-3">{{ post.content }}</p>
+          </div>
+
+          <div class="d-flex align-center justify-space-between mt-auto">
+            <div class="d-flex align-center stacked-avatars">
+              <v-avatar v-for="(avatar, index) in post.avatars" :key="index" size="32" class="border-white" :image="avatar"></v-avatar>
+              <v-avatar size="32" class="border-white bg-grey-lighten-3 text-caption font-weight-bold text-grey-darken-2">
+                {{ post.interactionCount }}
+              </v-avatar>
+            </div>
+            <v-btn variant="text" color="grey-darken-1" size="small" prepend-icon="mdi-share-variant-outline" class="text-none">
+              {{ post.actionText }}
+            </v-btn>
+          </div>
+        </div>
+
+      </div>
+      </v-card>
 
     <v-card v-else class="rounded-xl elevation-2 pa-6 border-opacity-50 mb-6" border>
       <div class="d-flex gap-4">
