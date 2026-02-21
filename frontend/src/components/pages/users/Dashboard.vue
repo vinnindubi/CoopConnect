@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref ,computed, onMounted} from 'vue';
 // --- Dummy Data 
 const marketplaceItems = ref([
   {
@@ -96,7 +96,7 @@ const feedPosts = ref([
   {
     id: 2,
     isImagePost: false,
-    category: 'Athletics',
+    category: 'Sports',
     categoryColor: 'blue-darken-2',
     icon: 'mdi-soccer',
     iconBg: 'blue-lighten-5',
@@ -152,6 +152,28 @@ const feedPosts = ref([
     actionText: 'Share'
   }
 ]);
+const selectedFilter= ref('All Updates');
+const filterOptions= ref([
+  'All Updates',
+  'Technology',
+  'Sports',
+  'Student Life',
+  'Administration',
+  'Clubs & Societies'
+]);
+const filteredPosts= computed( ()=> {
+  if(selectedFilter.value === "All Updates")
+  return feedPosts.value
+else {
+  return feedPosts.value.filter(post =>post.category === selectedFilter.value)
+}
+});
+const isLoading=ref(true);
+onMounted(()=>{
+setTimeout(()=>{
+  isLoading.value = false;
+},2000);
+});
 </script>
 
 <template>
@@ -163,9 +185,19 @@ const feedPosts = ref([
             <div class="pulsing-dot bg-primary"></div>
             <h2 class="text-h6 font-weight-bold text-grey-darken-4">Happening Now</h2>
           </div>
-          <v-btn variant="text" color="primary" size="small" class="text-none font-weight-bold" prepend-icon="mdi-filter">
-            Filter
-          </v-btn>
+          <v-sheet width="220" color="transparent">
+            <v-select
+            v-model="selectedFilter"
+            :items="filterOptions"
+            variant="outlined"
+            hide-details
+            density="compact"
+            prepend-inner-icon="mdi-filter-variant"
+            class="rounded-lg font-weight-medium"
+            rounded
+            >
+            </v-select>
+          </v-sheet>
         </div>
         <v-alert
           variant="tonal"
@@ -182,10 +214,31 @@ const feedPosts = ref([
             Urgent Alert • 10 mins ago
           </div>
         </v-alert>
+        <template v-if="isLoading">
+          <v-card v-for="n in 3" :key="'skeleton-'+ 'n'" class=" rounded-xl elevation-2 border-opacity-50 pa-4 mb-3"border>
+            <v-skeleton-loader
+            type="article, list-item-avatar"
+            elevation="0"
+            class="bg-transparent">
+            </v-skeleton-loader>
+          </v-card>
 
-        <div v-for = "post in feedPosts" :key="post.id" class="d-flex flex-column gap-6">
+        </template>
+        <template v-else>
+          <v-sheet 
+              v-if="filteredPosts.length === 0" 
+              class="text-center pa-10 rounded-xl border border-dashed" 
+              color="surface-variant" 
+              elevation="0"
+            >
+              <v-icon icon="mdi-text-box-search-outline" size="48" color="grey-lighten-1" class="mb-2"></v-icon>
+              <div class="text-h6 text-medium-emphasis">No updates found</div>
+              <div class="text-body-2 text-medium-emphasis mt-1">There are currently no posts in "{{ selectedFilter }}".</div>
+          </v-sheet>
+        
+        <div v-for = "post in filteredPosts" :key="post.id" class="d-flex flex-column gap-6">
           <v-card v-if="post.isImagePost" class="rounded-xl elevation-2 border-opacity-50 mb-6 overflow-hidden" border>
-      <div class="d-flex flex-column flex-sm-row h-100"" style="height: 100%;">
+      <div class="d-flex flex-column flex-sm-row h-100" style="height: 100%;">
         
         <div class="post-image-container ">
           <v-img
@@ -250,6 +303,7 @@ const feedPosts = ref([
       </div>
     </v-card>          
         </div>
+        </template>
       </v-col>
 
       <v-col cols="12" lg="4">
