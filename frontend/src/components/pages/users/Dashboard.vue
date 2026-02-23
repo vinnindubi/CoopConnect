@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { ref ,computed, onMounted} from 'vue';
+import { useDisplay } from 'vuetify';
+const {smAndUp}= useDisplay();
 // --- Dummy Data 
 const marketplaceItems = ref([
   {
@@ -242,8 +244,12 @@ setTimeout(()=>{
               <v-card class="rounded-xl elevation-2 border-opacity-50 overflow-hidden" border>
                 <div class="d-flex flex-column flex-sm-row h-100" style="height: 100%;">
                   
-                  <div v-if="post.isImagePost" class="post-image-container shrink-0">
-                    <v-img :src="post.image" :alt="post.title" height="100%" rounded="xl" cover></v-img>
+                  <div v-if="post.isImagePost" class="post-image-container shrink-0 d-flex"
+                  :style="{
+                        width: smAndUp ? '240px' :'100%',
+                        minWidth: smAndUp ? '240px' :'100%',
+                        height: smAndUp ? 'auto': '240px'  }">
+                    <v-img :src="post.image" :alt="post.title" class="flex-grow-1" rounded="xl" cover></v-img>
                   </div>
 
                   <div class="d-flex flex-column justify-space-between pa-6 flex-grow-1">
@@ -464,10 +470,10 @@ setTimeout(()=>{
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
 }
-.post-image-container{
+/* .post-image-container{
   width: 100%;
-  height: 200px;
-  min-height: 200px;
+  height: 240px;
+  min-height: 240px;
 }
 @media(min-width:600px){
   .post-image-container{
@@ -476,5 +482,5 @@ setTimeout(()=>{
     height:auto;
     min-height: 100%;
   }
-}
+} */
 </style>
