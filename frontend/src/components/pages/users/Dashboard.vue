@@ -63,7 +63,7 @@ const upcomingEvents = ref([
     title: 'Entrepreneurship Workshop',
     location: 'Google Meet',
     icon: 'mdi-video-outline',
-    highlight: false
+    highlight: true
   },
   {
     id: 3,
@@ -72,7 +72,7 @@ const upcomingEvents = ref([
     title: 'Debate Club Finals',
     location: 'Lecture Theatre 1',
     icon: 'mdi-map-marker-outline',
-    highlight: false
+    highlight: true
   }
 ]);
 // --- Feed Posts Data ---
@@ -187,16 +187,15 @@ setTimeout(()=>{
           </div>
           <v-sheet width="220" color="transparent">
             <v-select
-            v-model="selectedFilter"
-            :items="filterOptions"
-            variant="outlined"
-            hide-details
-            density="compact"
-            prepend-inner-icon="mdi-filter-variant"
-            class="rounded-lg font-weight-medium"
-            rounded
-            >
-            </v-select>
+              v-model="selectedFilter"
+              :items="filterOptions"
+              variant="outlined"
+              hide-details
+              density="compact"
+              prepend-inner-icon="mdi-filter-variant"
+              class="rounded-lg font-weight-medium"
+              rounded
+            ></v-select>
           </v-sheet>
         </div>
         <v-alert
@@ -208,24 +207,27 @@ setTimeout(()=>{
         >
           <div class="font-weight-bold text-error">Security Notice: Ongoing Construction</div>
           <div class="text-body-2 mt-1">
-            students are urged to avoid the student centre since there is ongoing construction to avoid accidents
+            Students are urged to avoid the student centre since there is ongoing construction to avoid accidents.
           </div>
           <div class="text-caption font-weight-bold text-uppercase mt-2">
             Urgent Alert • 10 mins ago
           </div>
         </v-alert>
-        <template v-if="isLoading">
-          <v-card v-for="n in 3" :key="'skeleton-'+ 'n'" class=" rounded-xl elevation-2 border-opacity-50 pa-4 mb-3"border>
-            <v-skeleton-loader
-            type="article, list-item-avatar"
-            elevation="0"
-            class="bg-transparent">
-            </v-skeleton-loader>
-          </v-card>
 
-        </template>
-        <template v-else>
-          <v-sheet 
+        <div class="d-flex flex-column gap-6">
+          
+          <template v-if="isLoading">
+            <v-card v-for="n in 3" :key="'skeleton-' + n" class="rounded-xl elevation-2 border-opacity-50 pa-4" border>
+              <v-skeleton-loader
+                type="article, list-item-avatar"
+                elevation="0"
+                class="bg-transparent"
+              ></v-skeleton-loader>
+            </v-card>
+          </template>
+
+          <template v-else>
+            <v-sheet 
               v-if="filteredPosts.length === 0" 
               class="text-center pa-10 rounded-xl border border-dashed" 
               color="surface-variant" 
@@ -234,80 +236,56 @@ setTimeout(()=>{
               <v-icon icon="mdi-text-box-search-outline" size="48" color="grey-lighten-1" class="mb-2"></v-icon>
               <div class="text-h6 text-medium-emphasis">No updates found</div>
               <div class="text-body-2 text-medium-emphasis mt-1">There are currently no posts in "{{ selectedFilter }}".</div>
-          </v-sheet>
-        
-        <div v-for = "post in filteredPosts" :key="post.id" class="d-flex flex-column gap-6">
-          <v-card v-if="post.isImagePost" class="rounded-xl elevation-2 border-opacity-50 mb-6 overflow-hidden" border>
-      <div class="d-flex flex-column flex-sm-row h-100" style="height: 100%;">
-        
-        <div class="post-image-container ">
-          <v-img
-            :src="post.image"
-            :alt="post.title"
-            height="100%"
-            rounded="xl"
-            cover
-          ></v-img>
-        </div>
+            </v-sheet>
 
-        <div class="d-flex flex-column justify-space-between pa-6 flex-grow-1">
-          <div>
-            <div class="d-flex align-center mb-3 gap-2">
-              <v-chip :color="post.categoryColor" size="small" variant="tonal" class="text-uppercase font-weight-bold rounded">
-                {{ post.category }}
-              </v-chip>
-              <span class="text-caption text-grey-darken-1">{{ post.timestamp }}</span>
-            </div>
+            <template v-for="post in filteredPosts" :key="post.id">
+              <v-card class="rounded-xl elevation-2 border-opacity-50 overflow-hidden" border>
+                <div class="d-flex flex-column flex-sm-row h-100" style="height: 100%;">
+                  
+                  <div v-if="post.isImagePost" class="post-image-container shrink-0">
+                    <v-img :src="post.image" :alt="post.title" height="100%" rounded="xl" cover></v-img>
+                  </div>
 
-            <h3 class="text-h6 font-weight-bold mb-2 line-clamp-2">{{ post.title }}</h3>
-            <p class="text-body-2 text-grey-darken-2 mb-4 line-clamp-3">{{ post.content }}</p>
-          </div>
+                  <div class="d-flex flex-column justify-space-between pa-6 flex-grow-1">
+                    <div class="d-flex gap-4">
+                      
+                      <div v-if="!post.isImagePost" class="d-flex align-center justify-center rounded-lg shrink-0 mt-1" :class="'bg-' + post.iconBg" style="width: 56px; height: 56px;">
+                        <v-icon :icon="post.icon" :color="post.categoryColor" size="28"></v-icon>
+                      </div>
 
-          <div class="d-flex align-center justify-space-between mt-auto">
-            <div class="d-flex align-center stacked-avatars">
-              <v-avatar v-for="(avatar, index) in post.avatars" :key="index" size="32" class="border-white" :image="avatar"></v-avatar>
-              <v-avatar size="32" class="border-white bg-grey-lighten-3 text-caption font-weight-bold text-grey-darken-2">
-                {{ post.interactionCount }}
-              </v-avatar>
-            </div>
-            <v-btn variant="text" color="grey-darken-1" size="small" prepend-icon="mdi-share-variant-outline" class="text-none">
-              {{ post.actionText }}
-            </v-btn>
-          </div>
-        </div>
+                      <div class="flex-grow-1">
+                        <div class="d-flex align-center mb-2 gap-2">
+                          <v-chip :color="post.categoryColor" size="small" variant="tonal" class="text-uppercase font-weight-bold rounded">
+                            {{ post.category }}
+                          </v-chip>
+                          <span class="text-caption text-medium-emphasis">{{ post.timestamp }}</span>
+                        </div>
+                        <h3 class="text-h6 font-weight-bold mb-1 line-clamp-2">{{ post.title }}</h3>
+                        <p class="text-body-2 text-medium-emphasis mb-4 line-clamp-3">{{ post.content }}</p>
+                      </div>
+                    </div>
 
-      </div>
-      </v-card>
+                    <div class="mt-auto">
+                      <v-divider class="mb-3 opacity-20"></v-divider>
+                      <div class="d-flex align-center justify-end">
+                        <v-btn variant="text" color="primary" class="text-none font-weight-bold px-2" append-icon="mdi-arrow-right">
+                          Read More
+                        </v-btn>
+                      </div>
+                    </div>
 
-    <v-card v-else class="rounded-xl elevation-2 pa-6 border-opacity-50 mb-6" border>
-      <div class="d-flex gap-4">
-        <div class="d-flex align-center justify-center rounded-lg shrink-0" :class="'bg-' + post.iconBg" style="width: 64px; height: 64px;">
-          <v-icon :icon="post.icon" :color="post.categoryColor" size="32"></v-icon>
+                  </div>
+                </div>
+              </v-card>
+            </template>
+
+          </template>
         </div>
-        
-        <div class="flex-grow-1">
-          <div class="d-flex align-center mb-1 gap-2">
-            <v-chip :color="post.categoryColor" size="small" variant="tonal" class="text-uppercase font-weight-bold rounded">
-              {{ post.category }}
-            </v-chip>
-            <span class="text-caption text-grey-darken-1">{{ post.timestamp }}</span>
-          </div>
-          
-          <h3 class="text-h6 font-weight-bold">{{ post.title }}</h3>
-          <p class="text-body-2 text-grey-darken-1 mt-1">{{ post.content }}</p>
-          
-          <v-btn :color="post.actionColor" size="small" class="text-none font-weight-bold mt-4 rounded-lg px-4">
-            {{ post.actionText }}
-          </v-btn>
-        </div>
-      </div>
-    </v-card>          
-        </div>
-        </template>
       </v-col>
 
       <v-col cols="12" lg="4">
         <div class="d-flex sticky-sidebar flex-column gap-6">
+          
           <v-card class="rounded-xl elevation-2 border-opacity-50" border>
             <div class="d-flex justify-space-between align-center pa-4 bg-surface-variant border-bottom">
               <div class="text-subtitle-2 font-weight-bold d-flex align-center gap-2">
@@ -319,16 +297,15 @@ setTimeout(()=>{
               </span>
             </div>
 
-            <div class="pa-4 d-flex flex-column gap-4"
-            style="max-height: 250px; overflow-y: auto;">
+            <div class="pa-4 d-flex flex-column gap-4" style="max-height: 250px; overflow-y: auto;">
               <div v-for="item in marketplaceItems" :key="item.id" class="d-flex gap-3 cursor-pointer marketplace-item">
-                <div >
-                <v-img :src="item.image" :alt="item.title" width="64" height="64" cover class="rounded-lg shrink-0"></v-img>
+                <div>
+                  <v-img :src="item.image" :alt="item.title" width="64" height="64" cover class="rounded-lg shrink-0"></v-img>
                 </div>
                 <div>
                   <div class="text-body-2 font-weight-medium item-title transition-colors">{{ item.title }}</div>
                   <div class="text-caption font-weight-bold text-primary mt-1">{{ item.price }}</div>
-                  <div class="text-caption text-grey mt-1" style="font-size: 10px !important;">
+                  <div class="text-caption text-medium-emphasis mt-1" style="font-size: 10px !important;">
                     {{ item.location }} • {{ item.time }}
                   </div>
                 </div>
@@ -342,12 +319,12 @@ setTimeout(()=>{
           </v-card>
 
           <v-card class="rounded-xl elevation-2 border-opacity-50" border>
-             <div class="d-flex justify-space-between align-center pa-4 bg-surface-variant border-bottom">
+            <div class="d-flex justify-space-between align-center pa-4 bg-surface-variant border-bottom">
               <div class="text-subtitle-2 font-weight-bold d-flex align-center gap-2">
                 <v-icon icon="mdi-calendar-outline" color="primary" size="small"></v-icon>
                 Upcoming Clubs
               </div>
-              <span class="text-caption font-weight-bold text-grey-darken-1 text-uppercase">
+              <span class="text-caption font-weight-bold text-medium-emphasis text-uppercase">
                 Feb 2026
               </span>
             </div>
@@ -360,24 +337,22 @@ setTimeout(()=>{
                   style="width: 48px; height: 56px;"
                   :class="event.highlight ? 'bg-orange-lighten-5 border-orange-lighten-3' : 'bg-surface-variant border-grey-lighten-2'"
                 >
-                  <span class="text-uppercase font-weight-bold" style="font-size: 10px;" :class="event.highlight ? 'text-primary' : 'text-grey-darken-1'">
+                  <span class="text-uppercase font-weight-bold" style="font-size: 10px;" :class="event.highlight ? 'text-primary' : 'text-medium-emphasis'">
                     {{ event.month }}
                   </span>
-                  <span class="text-h6 font-weight-bold leading-none mt-1" :class="event.highlight ? 'text-primary' : 'text-grey-darken-2'">
+                  <span class="text-h6 font-weight-bold leading-none mt-1" :class="event.highlight ? 'text-primary' : 'text-high-emphasis'">
                     {{ event.day }}
                   </span>
                 </div>
 
                 <div class="flex-grow-1">
                   <div class="text-body-2 font-weight-bold text-truncate">{{ event.title }}</div>
-                  <div class="text-caption text-grey-darken-1 d-flex align-center gap-1 mt-1">
+                  <div class="text-caption text-medium-emphasis d-flex align-center gap-1 mt-1">
                     <v-icon :icon="event.icon" size="14"></v-icon>
                     {{ event.location }}
                   </div>
-                  <v-btn v-if="event.highlight" color="primary" size="x-small" rounded="pill" class="mt-2 text-none font-weight-bold">
-                    Remind Me
-                  </v-btn>
                 </div>
+
               </div>
             </div>
           </v-card>
@@ -462,7 +437,7 @@ setTimeout(()=>{
 
 /* 7. Gradient Background for Helplines */
 .gradient-bg {
-  background: linear-gradient(135deg, #ec7f13 0%, #d84315 100%);
+  background: linear-gradient(135deg, #a08b7d 0%, #d84315 100%);
 }
 .bg-white-opacity {
   background-color: rgba(255, 255, 255, 0.2) !important;
