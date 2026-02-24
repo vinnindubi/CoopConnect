@@ -195,8 +195,8 @@ setTimeout(()=>{
               hide-details
               density="compact"
               prepend-inner-icon="mdi-filter-variant"
-              class="rounded-lg font-weight-medium"
-              rounded
+              class=" font-weight-medium"
+              rounded="lg"
             ></v-select>
           </v-sheet>
         </div>

@@ -85,7 +85,7 @@ const products = ref([
     title: 'Business Law & Economics Textbooks',
     price: 'KES 1,200',
     category: 'Academic',
-    seller: 'Jane Doe',
+    seller: 'Jennifer Wambo',
     isVerified: true,
     time: '2d ago',
     image: 'https://images.unsplash.com/photo-1588580000645-4562a6d2c839?auto=format&fit=crop&q=80&w=400'
@@ -169,7 +169,7 @@ const filteredAdverts = computed(() => {
     
     <div class="d-flex flex-column flex-md-row justify-space-between align-md-end mb-6 gap-4">
       <div>
-        <h1 class="text-h5 font-weight-bold text-grey-darken-4">Campus Hub</h1>
+        <h1 class="text-h5 font-weight-bold text-high-emphasis">Campus Hub</h1>
         
         <v-tabs v-model="activeTab" color="primary" class="mt-2">
           <v-tab value="marketplace" class="text-none font-weight-bold">
@@ -177,6 +177,9 @@ const filteredAdverts = computed(() => {
           </v-tab>
           <v-tab value="adverts" class="text-none font-weight-bold">
             <v-icon start>mdi-bulletin-board</v-icon> Advertisements
+          </v-tab>
+          <v-tab value="inquery" class="text-none font-weight-bold">
+            <v-icon start>mdi-message-question </v-icon> Inquery
           </v-tab>
         </v-tabs>
       </div>
@@ -266,6 +269,11 @@ const filteredAdverts = computed(() => {
           </v-card>
         </v-col>
       </v-row>
+    </div>
+    <div v-if="activeTab === 'inquery'">
+        <v-card>
+            
+        </v-card>
     </div>
 
   </v-container>
