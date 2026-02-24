@@ -470,17 +470,5 @@ setTimeout(()=>{
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
 }
-/* .post-image-container{
-  width: 100%;
-  height: 240px;
-  min-height: 240px;
-}
-@media(min-width:600px){
-  .post-image-container{
-    width:240px !important;
-    min-width:240px;
-    height:auto;
-    min-height: 100%;
-  }
-} */
+
 </style>
