@@ -120,20 +120,15 @@ const gridEvents = computed(() => {
     >
       <v-carousel-item v-for="event in featuredEvents" :key="'featured-' + event.id" :src="event.image" cover>
         <div class="fill-height d-flex flex-column justify-end pa-6 pa-md-10 text-white" 
-             style="background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0) 100%);">
-          
-          <v-chip color="primary" variant="flat" class="mb-3 align-self-start font-weight-bold text-uppercase">
-            Featured
-          </v-chip>
-          
+             style="background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0) 100%);">          
           <h2 class="text-h4 text-md-h3 font-weight-black mb-3 line-clamp-2" style="line-height: 1.1;">
             {{ event.title }}
           </h2>
           
           <div class="d-flex flex-wrap align-center gap-4 text-body-2 text-md-body-1 font-weight-medium mb-5 opacity-90">
-            <div class="d-flex align-center gap-1"><v-icon icon="mdi-calendar" size="20"></v-icon> {{ event.month }} {{ event.day }}</div>
-            <div class="d-flex align-center gap-1"><v-icon icon="mdi-clock-outline" size="20"></v-icon> {{ event.time }}</div>
-            <div class="d-flex align-center gap-1"><v-icon :icon="event.icon" size="20"></v-icon> {{ event.location }}</div>
+            <div class="d-flex align-center gap-1 mr-1"><v-icon icon="mdi-calendar" size="20"></v-icon> {{ event.month }} {{ event.day }}</div>
+            <div class="d-flex align-center gap-1 mr-1"><v-icon icon="mdi-clock-outline" size="20"></v-icon> {{ event.time }}</div>
+            <div class="d-flex align-center gap-1 mr-1"><v-icon :icon="event.icon" size="20"></v-icon> {{ event.location }}</div>
           </div>
           
           <v-btn color="primary" size="large" class="text-none font-weight-bold align-self-start rounded-lg px-8">

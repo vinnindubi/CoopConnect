@@ -2,6 +2,7 @@
 import { ref, provide } from "vue";
 import Header from "@/components/includes/Header.vue";
 import Sidebar from "@/components/includes/Sidebar.vue";
+import Footer from "@/components/includes/Footer.vue";
 
 const drawer = ref(true); // state shared between header + sidebar
 
@@ -19,9 +20,8 @@ provide("toggleSidebar", toggleSidebar);
 
     <v-main>
       <router-view/>
+      <Footer/>
     </v-main>
+    
   </v-app>
 </template>
-<style scoped>
-
-</style>

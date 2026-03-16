@@ -66,7 +66,14 @@ const triggerProductAction = (action: string, id?: number) => {
 // ==========================================
 const reviewsData = ref({
   averageRating: 4.8,
-  totalReviews: 24
+  totalReviews: 24,
+  distribution: [
+    { stars: 5, percentage: 85 },
+    { stars: 4, percentage: 10 },
+    { stars: 3, percentage: 5 },
+    { stars: 2, percentage: 0 },
+    { stars: 1, percentage: 0 },
+  ]
 });
 
 const reviews = ref([
@@ -229,51 +236,6 @@ const triggerSnackbar = (text: string) => {
 
         </div>
       </v-card>
-
-      <div class="mb-10">
-        <div class="d-flex justify-space-between align-end mb-4 px-2">
-          <div>
-            <h2 class="text-h5 font-weight-black text-high-emphasis">My Store</h2>
-            <p class="text-body-2 text-medium-emphasis mt-1">Manage the items you are selling on campus.</p>
-          </div>
-          <v-btn v-if="catalogue.length > 0" color="primary" variant="flat" size="small" class="text-none font-weight-bold rounded-lg mb-2" @click="triggerProductAction('Adding New')">
-            <v-icon start icon="mdi-plus"></v-icon> Add Product
-          </v-btn>
-        </div>
-
-        <v-row v-if="catalogue.length > 0">
-          <v-col cols="12" sm="6" md="4" v-for="product in catalogue" :key="product.id">
-            <v-card class="rounded-xl elevation-2 border-opacity-50 h-100 d-flex flex-column bg-surface" border hover>
-              <v-img :src="product.image" height="150" cover></v-img>
-              <div class="pa-4 d-flex flex-column flex-grow-1">
-                <div class="text-subtitle-1 font-weight-bold text-high-emphasis mb-1">{{ product.name }}</div>
-                <div class="text-body-1 font-weight-black text-primary mb-4">{{ product.price }}</div>
-                
-                <div class="mt-auto d-flex border-t border-opacity-20 pt-3">
-                  <v-btn flex-grow-1 color="primary" variant="tonal" size="small" class="text-none font-weight-bold rounded-lg mr-2" @click="triggerProductAction('Editing', product.id)">
-                    <v-icon start icon="mdi-pencil" size="16"></v-icon> Edit
-                  </v-btn>
-                  <v-btn icon="mdi-trash-can-outline" variant="tonal" color="error" size="small" class="rounded-lg shrink-0" @click="triggerProductAction('Deleting', product.id)"></v-btn>
-                </div>
-              </div>
-            </v-card>
-          </v-col>
-        </v-row>
-
-        <v-card v-else class="rounded-xl border border-dashed border-success bg-surface-variant bg-opacity-30 pa-8 text-center" elevation="0">
-          <v-avatar color="primary" variant="tonal" size="64" class="mb-4">
-            <v-icon icon="mdi-storefront-outline" size="32"></v-icon>
-          </v-avatar>
-          <h3 class="text-h5 font-weight-bold text-high-emphasis mb-2">Open your campus store</h3>
-          <p class="text-body-1 text-medium-emphasis mb-6 mx-auto" style="max-width: 400px;">
-            Got old textbooks, electronics, or dorm gear? List your first item and start making money today.
-          </p>
-          <v-btn color="primary" variant="flat" size="large" class="text-none font-weight-bold rounded-lg px-8" @click="triggerProductAction('Adding New')">
-            Add Your First Product
-          </v-btn>
-        </v-card>
-      </div>
-
       <div class="mb-10">
         <div class="d-flex justify-space-between align-end mb-4 px-2">
           <div>
@@ -321,6 +283,49 @@ const triggerSnackbar = (text: string) => {
           </v-btn>
         </v-card>
       </div>
+      <div class="mb-10">
+        <div class="d-flex justify-space-between align-end mb-4 px-2">
+          <div>
+            <h2 class="text-h5 font-weight-black text-high-emphasis">My Store</h2>
+            <p class="text-body-2 text-medium-emphasis mt-1">Manage the items you are selling on campus.</p>
+          </div>
+          <v-btn v-if="catalogue.length > 0" color="primary" variant="flat" size="small" class="text-none font-weight-bold rounded-lg mb-2" @click="triggerProductAction('Adding New')">
+            <v-icon start icon="mdi-plus"></v-icon> Add Product
+          </v-btn>
+        </div>
+
+        <v-row v-if="catalogue.length > 0">
+          <v-col cols="12" sm="6" md="4" v-for="product in catalogue" :key="product.id">
+            <v-card class="rounded-xl elevation-2 border-opacity-50 h-100 d-flex flex-column bg-surface" border hover>
+              <v-img :src="product.image" height="150" cover></v-img>
+              <div class="pa-4 d-flex flex-column flex-grow-1">
+                <div class="text-subtitle-1 font-weight-bold text-high-emphasis mb-1">{{ product.name }}</div>
+                <div class="text-body-1 font-weight-black text-primary mb-4">{{ product.price }}</div>
+                
+                <div class="mt-auto d-flex border-t border-opacity-20 pt-3">
+                  <v-btn flex-grow-1 color="primary" variant="tonal" size="small" class="text-none font-weight-bold rounded-lg mr-2" @click="triggerProductAction('Editing', product.id)">
+                    <v-icon start icon="mdi-pencil" size="16"></v-icon> Edit
+                  </v-btn>
+                  <v-btn icon="mdi-trash-can-outline" variant="tonal" color="error" size="small" class="rounded-lg shrink-0" @click="triggerProductAction('Deleting', product.id)"></v-btn>
+                </div>
+              </div>
+            </v-card>
+          </v-col>
+        </v-row>
+
+        <v-card v-else class="rounded-xl border border-dashed border-success bg-surface-variant bg-opacity-30 pa-8 text-center" elevation="0">
+          <v-avatar color="primary" variant="tonal" size="64" class="mb-4">
+            <v-icon icon="mdi-storefront-outline" size="32"></v-icon>
+          </v-avatar>
+          <h3 class="text-h5 font-weight-bold text-high-emphasis mb-2">Open your campus store</h3>
+          <p class="text-body-1 text-medium-emphasis mb-6 mx-auto" style="max-width: 400px;">
+            Got old textbooks, electronics, or dorm gear? List your first item and start making money today.
+          </p>
+          <v-btn color="primary" variant="flat" size="large" class="text-none font-weight-bold rounded-lg px-8" @click="triggerProductAction('Adding New')">
+            Add Your First Product
+          </v-btn>
+        </v-card>
+      </div>
 
       <div class="mb-10">
         <div class="d-flex justify-space-between align-end mb-4 px-2">
@@ -332,20 +337,50 @@ const triggerSnackbar = (text: string) => {
 
         <v-row v-if="reviews.length > 0">
           <v-col cols="12" sm="4">
-            <v-card class="rounded-xl elevation-2 border-opacity-50 bg-surface h-100 d-flex flex-column align-center justify-center text-center pa-6" border>
-              <h1 class="text-h2 font-weight-black text-high-emphasis">{{ reviewsData.averageRating }}</h1>
-              <v-rating 
-                :model-value="reviewsData.averageRating" 
-                color="amber-darken-2" 
-                density="compact" 
-                half-increments 
-                readonly 
-                class="mb-2 mt-1"
-              ></v-rating>
-              <div class="text-caption font-weight-bold text-medium-emphasis">
-                Based on {{ reviewsData.totalReviews }} reviews
+            <div style="position: sticky; ">
+            <v-card class="rounded-xl elevation-2 border-opacity-50 bg-surface h-100 d-flex flex-column pa-6" border>
+  
+              <div class="text-center mb-5 mt-2">
+                <h1 class="text-h2 font-weight-black text-high-emphasis leading-none">{{ reviewsData.averageRating }}</h1>
+                <v-rating 
+                  :model-value="reviewsData.averageRating" 
+                  color="amber-darken-2" 
+                  density="compact" 
+                  half-increments 
+                  readonly 
+                  class="mt-2 mb-1"
+                ></v-rating>
+                <div class="text-caption font-weight-bold text-medium-emphasis">
+                  Based on {{ reviewsData.totalReviews }} reviews
+                </div>
+              </div>
+
+              <v-divider class="mb-5 opacity-20"></v-divider>
+
+              <div class="d-flex flex-column gap-2 flex-grow-1 justify-center">
+                <div v-for="item in reviewsData.distribution" :key="item.stars" class="d-flex align-center">
+                  
+                  <span class="text-caption font-weight-bold text-high-emphasis" style="width: 10px;">
+                    {{ item.stars }}
+                  </span>
+                  <v-icon icon="mdi-star" color="amber-darken-2" size="14" class="mx-2"></v-icon>
+                  
+                  <v-progress-linear
+                    :model-value="item.percentage"
+                    color="amber-darken-2"
+                    height="8"
+                    rounded
+                    bg-color="surface-variant"
+                    class="flex-grow-1 opacity-90"
+                  ></v-progress-linear>
+                  
+                  <span class="text-caption text-medium-emphasis text-right ml-3" style="width: 32px;">
+                    {{ item.percentage }}%
+                  </span>
+                </div>
               </div>
             </v-card>
+            </div>
           </v-col>
 
           <v-col cols="12" sm="8">

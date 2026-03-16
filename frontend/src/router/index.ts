@@ -9,7 +9,7 @@ import AdminLayout from '@/layouts/AdminLayout.vue';
 import EditProfile from '@/components/pages/forms/EditProfile.vue';
 import Register from '@/components/pages/users/Register.vue';
 import Events from '@/components/pages/users/Events.vue';
-import Articles from '@/components/pages/users/Articles.vue';
+import Articles from '../components/pages/users/Articles.vue';
 import Forum from '@/components/pages/users/Forum.vue';
 import Feedback from '@/components/pages/forms/Feedback.vue';
 import MarketPlace from '@/components/pages/users/MarketPlace.vue';
