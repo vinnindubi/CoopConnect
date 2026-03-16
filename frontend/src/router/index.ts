@@ -9,6 +9,7 @@ import AdminLayout from '@/layouts/AdminLayout.vue';
 import EditProfile from '@/components/pages/forms/EditProfile.vue';
 import Register from '@/components/pages/users/Register.vue';
 import Events from '@/components/pages/users/Events.vue';
+import Articles from '@/components/pages/users/Articles.vue';
 import Forum from '@/components/pages/users/Forum.vue';
 import Feedback from '@/components/pages/forms/Feedback.vue';
 import MarketPlace from '@/components/pages/users/MarketPlace.vue';
@@ -19,7 +20,7 @@ const routes=[{
     children:[ 
         {path:'/',name:'Home',component:Dashboard},
         {path:'events',name:'Events',component:Events},
-        {path:'articles',name:'Articles',component: Events}, //typescript enforces need for component. ensure you put it.
+        {path:'articles',name:'Articles',component: Articles}, //typescript enforces need for component. ensure you put it.
         {path:'forums',name:'Forums',component:Forum},
         {path:'marketplace',name:'Marketplace',component:MarketPlace},
         {path:'feedback',name:'Feedback',component:Feedback},
