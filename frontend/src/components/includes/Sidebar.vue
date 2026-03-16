@@ -1,8 +1,12 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, provide } from "vue";
 
 // reactive state for open/close
 const drawer = ref(false); // true = visible by default
+const toggleSidebar = () => {
+  drawer.value = !drawer.value;
+};
+provide("toggleSidebar", toggleSidebar);
 </script>
 
 <template> 

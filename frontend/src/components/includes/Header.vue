@@ -3,7 +3,7 @@ import { ref ,inject } from "vue";
 import { useTheme } from "vuetify";
 // get sidebar toggle function from App.vue
 const toggleSidebar = inject("toggleSidebar") as () => void;
-const darkTheme= ref(false)
+const darkTheme= ref(true)
 const theme = useTheme()
 const toggleTheme= ()=>{
   darkTheme.value =!darkTheme.value;
