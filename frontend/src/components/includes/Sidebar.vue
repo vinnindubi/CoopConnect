@@ -2,7 +2,7 @@
 import { ref } from "vue";
 
 // reactive state for open/close
-const drawer = ref(true); // true = visible by default
+const drawer = ref(false); // true = visible by default
 </script>
 
 <template> 
