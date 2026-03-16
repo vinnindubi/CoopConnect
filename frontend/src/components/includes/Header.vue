@@ -19,15 +19,7 @@ const toggleTheme= ()=>{
 
     <v-app-bar-title class="cursor-pointer" @click="$router.push('/')">CoopConnect</v-app-bar-title>
     <v-spacer/>
-    <v-text-field
-      prepend-inner-icon="mdi-magnify"
-      label="Search"
-      variant="outlined"
-      density="compact"
-      hide-details
-      class="mx-4"
-      style="max-width: 250px;"
-    />
+    
     <v-btn icon variant="text">
       <v-icon>mdi-bell-outline</v-icon>
       <v-badge color="red" content="3" floating></v-badge>

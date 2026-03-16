@@ -121,7 +121,7 @@ const adverts = ref([
     id: 1,
     title: 'Looking for a Female Roommate',
     category: 'Housing',
-    description: 'Seeking a neat roommate to share a 1-bedroom apartment in Karen Ndogo. Rent is 6k per month. WiFi included.',
+    description: 'Seeking a neat roommate to share a 1-bedroom apartment in Hardy Karen. Rent is 6k per month. WiFi included.',
     author: 'Sarah M.',
     time: '5h ago',
     icon: 'mdi-home-account',
@@ -179,7 +179,7 @@ const filteredAdverts = computed(() => {
             <v-icon start>mdi-bulletin-board</v-icon> Advertisements
           </v-tab>
           <v-tab value="inquery" class="text-none font-weight-bold">
-            <v-icon start>mdi-message-question </v-icon> Inquery
+            <v-icon start>mdi-message-question </v-icon> Inquiry
           </v-tab>
         </v-tabs>
       </div>
@@ -270,7 +270,7 @@ const filteredAdverts = computed(() => {
         </v-col>
       </v-row>
     </div>
-    <div v-if="activeTab === 'inquery'">
+    <div v-if="activeTab === 'inquiry'">
         <v-card>
             
         </v-card>
