@@ -18,7 +18,7 @@ const routes=[{
     path:'/',
     component:DefaultLayout,
     children:[ 
-        {path:'/',name:'Home',component:Dashboard},
+        {path:'/home',name:'Home',component:Dashboard},
         {path:'events',name:'Events',component:Events},
         {path:'articles',name:'Articles',component: Articles}, //typescript enforces need for component. ensure you put it.
         {path:'forums',name:'Forums',component:Forum},

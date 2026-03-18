@@ -319,7 +319,7 @@ setTimeout(()=>{
             </div>
 
             <v-divider></v-divider>
-            <v-btn variant="text" block color="grey-darken-1" class="text-none text-caption font-weight-bold py-3 rounded-0 bg-grey-lighten-5">
+            <v-btn variant="text" block  to="/marketplace" color="grey-darken-1" class="text-none text-caption font-weight-bold py-3 rounded-0 bg-grey-lighten-5">
               View All Commodities
             </v-btn>
           </v-card>
