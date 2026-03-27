@@ -13,8 +13,17 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->string('fullname');
+            $table->string('admission');
             $table->string('email')->unique();
+            $table->string('course')->nullable();
+            $table->string('year')->nullable();
+            $table->string('phone')->nullable();
+            $table->string('bio')->nullable();
+            $table->string('avatar')->nullable();
+            $table->string('cover_photo')->nullable();
+            $table->enum('verification_status',['pending','approved','banned','suspended'])->default('pending');
+            $table->json('store_categories')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();

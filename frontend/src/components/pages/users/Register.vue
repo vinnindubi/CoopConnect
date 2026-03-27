@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue';
-import {useRouter} from 'vue-router'
+import {useRouter} from 'vue-router';
+import { register } from '@/services/authService';
 
-// -- Form State --
 const formData= reactive({
   fullname:'',
-  admNumber:'',
+  admission:'',
   email:'',
   password:'',
   confirmPassword:''
@@ -25,22 +25,31 @@ const rules = {
 
 // -- Submit Logic --
 const loading = ref(false);
-const isFormValid = ref(false)
+const isFormValid = ref(false);
+const validationErrors = ref('');
+const generalError = ref('');
 
 const handleRegister = async () => {
   if (!isFormValid.value ||!agreeToTerms.value)   return;
   
   loading.value = true;
-  // Simulate an API call
-  setTimeout(() => {
-    console.log("Registering:", { 
-      name: formData.fullname, 
-      adm: formData.admNumber, 
-      email: formData.email 
-    });
+  try {
+    // Make the POST request to your Laravel API
+    const response = await register(formData);
+    console.log('Registration Successful!', response.data);
+    localStorage.setItem('auth_token', response.data.token);
+    localStorage.setItem('user', JSON.stringify(response.data.user));
+    router.push('/home');
+  } catch(error: any){
+    if (error.response && error.response.status ===422){
+      validationErrors.value = error.response.data.errors;
+    }else{
+      generalError.value =error.response?.data?.message || 'something went wrong. Please try again later.';
+      console.error ('Registration Error:', error);
+    }
+  } finally{
     loading.value = false;
-    router.push('/')
-  }, 1500);
+  }
 };
 </script>
 
@@ -90,7 +99,7 @@ const handleRegister = async () => {
                     <div class="mb-3">
                       <label class="text-caption font-weight-bold text-grey-darken-2 mb-1 d-block">Admission No.</label>
                       <v-text-field
-                        v-model="formData.admNumber"
+                        v-model="formData.admission"
                         :rules="[rules.required]"
                         placeholder="e.g., BITC01/..."
                         variant="outlined"

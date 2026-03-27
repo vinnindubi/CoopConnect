@@ -1,6 +1,11 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, reactive } from 'vue';
 import {useRouter} from 'vue-router'
+import {loginUser} from '@/services/authService'
+const formData = reactive({
+ email :'',
+ password : ''
+});
 const email = ref('');
 const password = ref('');
 const rememberMe = ref(false);
@@ -12,15 +17,35 @@ const rules={
   email: (value: string) => /.+@.+\..+/.test(value) || 'E-mail must be valid.',
 }
 const isFormValid = ref(false);
+const errorMessage =ref('');
 // Logic to handle the login
 const handleLogin = async () => {
   if (!isFormValid.value)     return;
-  console.log("Logging in...", { email: email.value, password: password.value });
   loading.value= true;
-  setTimeout(() => {
+  errorMessage.value ='';
+  try{
+     const response = await loginUser(formData);
+      localStorage.setItem('auth_token', response.data.token);
+      localStorage.setItem('user', JSON.stringify(response.data.user));
+      console.log("Logging in...", { email: formData.email, password: formData.password});
+      router.push('/home');
+  }catch(error: any){
+    console.log('Login error: ' ,error);
+    if(error.response){
+      if (error.response.status === 401){
+        errorMessage.value = 'Invalid email or password. Please try again.';
+     } else if(error.response.status === 422){
+       errorMessage.value = 'Please ensure your email and password are correct.';
+     }else{
+      errorMessage.value ='A server error occurred. Please try again later.';
+     }
+    } else {
+      errorMessage.value = 'Network error. Please check your connection to the server.';
+    }
+  } finally{
     loading.value = false;
-    router.push('/')
-  }, 1500);
+  }
+  
 };
 </script>
 
@@ -56,12 +81,20 @@ const handleLogin = async () => {
                 <h2 class="text-h6 font-weight-bold text-grey-darken-3">Welcome Back</h2>
                 <p class="text-caption text-grey-darken-1">Please sign in to access your student portal</p>
               </div>
-
+                <v-alert
+                    v-if="errorMessage"
+                    type="error"
+                    variant="tonal"
+                    class="mb-6 rounded-lg border-error-subtle"
+                    closable
+                    @click:close="errorMessage = ''" >
+                    {{ errorMessage }}
+                </v-alert>
               <v-form  v-model="isFormValid" @submit.prevent="handleLogin">
                 <div class="mb-4">
                   <label class="text-caption font-weight-bold text-grey-darken-2 mb-1 d-block">Student Email or Username</label>
                   <v-text-field
-                    v-model="email"
+                    v-model="formData.email"
                     :rules="[rules.email]"
                     placeholder="e.g., student@cuk.ac.ke"
                     variant="outlined"
@@ -76,7 +109,7 @@ const handleLogin = async () => {
                 <div class="mb-2">
                   <label class="text-caption font-weight-bold text-grey-darken-2 mb-1 d-block">Password</label>
                   <v-text-field
-                    v-model="password"
+                    v-model="formData.password"
                     :rules="[rules.min]"
                     placeholder="••••••••"
                     variant="outlined"

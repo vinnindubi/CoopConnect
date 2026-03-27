@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref ,inject } from "vue";
 import { useTheme } from "vuetify";
+import { logoutUser } from "@/services/authService";
 // get sidebar toggle function from App.vue
 const toggleSidebar = inject("toggleSidebar") as () => void;
 const darkTheme= ref(true)
@@ -8,6 +9,17 @@ const theme = useTheme()
 const toggleTheme= ()=>{
   darkTheme.value =!darkTheme.value;
   theme.toggle();
+}
+const handleLogOut= async ()=>{
+  try{
+    const response = await logoutUser();
+    
+
+  }catch(error){
+
+  }finally{
+
+  }
 }
 
 </script>
@@ -41,9 +53,9 @@ const toggleTheme= ()=>{
         </v-avatar>
       </template>
       <v-list>
-        <v-list-item prepend-icon="mdi-account">Profile</v-list-item>
+        <v-list-item prepend-icon="mdi-account" to="/profile">Profile</v-list-item>
         <v-list-item prepend-icon="mdi-cog">Settings</v-list-item>
-        <v-list-item prepend-icon="mdi-logout">LogOut</v-list-item>
+        <v-list-item @click="handleLogOut" prepend-icon="mdi-logout">LogOut</v-list-item>
       </v-list>
     </v-menu>
   </v-app-bar>

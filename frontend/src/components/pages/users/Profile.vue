@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted} from 'vue';
+import { getUserProfile } from '@/services/authService';
 
 // ==========================================
 // 1. STATE: Personal Information
@@ -8,19 +9,32 @@ const isEditingProfile = ref(false);
 const showSnackbar = ref(false);
 const snackbarText = ref('');
 
-const profile = ref({
-  name: 'Alex Johnson',
-  email: 'alex.j@students.coop.ac.ke',
-  course: 'BSc. Software Engineering',
-  year: '3rd Year',
-  phone: '+254 712 345 678',
-  bio: 'Passionate about coding, campus events, and selling the best used textbooks. Let me know if you need any past papers!',
-  avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=300',
-  coverPhoto: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&q=80&w=1200',
-  verificationStatus: 'Pending', 
-  storeCategories: ['Electronics', 'Academic Material'] 
-});
+// const profile2 = ref({
+//   name: 'Alex Johnson',
+//   email: 'alex.j@students.coop.ac.ke',
+//   course: 'BSc. Software Engineering',
+//   year: '3rd Year',
+//   phone: '+254 712 345 678',
+//   bio: 'Passionate about coding, campus events, and selling the best used textbooks. Let me know if you need any past papers!',
+//   avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=300',
+//   coverPhoto: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&q=80&w=1200',
+//   verificationStatus: 'Pending', 
+//   storeCategories: ['Electronics', 'Academic Material'] 
+// });
 
+const profile = ref({
+  name:'',
+  admission:'',
+  email:'',
+  course: '',
+  year:'',
+  phone: '',
+  bio: '',
+  avatar : '',
+  coverPhoto:'',
+  verificationStatus:'',
+  storeCategories: []
+});
 const categoryOptions = ['Clothing', 'Electronics', 'Academic Material', 'Services', 'Dorm Gear', 'Food & Snacks', 'Other'];
 
 const editForm = ref(JSON.parse(JSON.stringify(profile.value)));
@@ -110,6 +124,21 @@ const triggerSnackbar = (text: string) => {
   snackbarText.value = text;
   showSnackbar.value = true;
 };
+const getUser = async () => {
+  try{
+       const response = await getUserProfile();
+       const userData = response.data.data;
+       profile.value.name = userData.fullname;
+       profile.value.email = userData.email;
+       profile.value.admission = userData.admission
+  }catch(error){
+    console.error('Error fetching profile:', error);
+  }
+  
+}
+onMounted(() => {
+  getUser();
+  });
 </script>
 
 <template>
@@ -192,25 +221,25 @@ const triggerSnackbar = (text: string) => {
             <v-row>
               <v-col cols="12" sm="6">
                 <label class="text-caption font-weight-bold mb-1 d-block">Full Name</label>
-                <v-text-field v-model="editForm.name" variant="outlined" density="compact" class="rounded-lg mb-2"></v-text-field>
+                <v-text-field v-model="profile.name" variant="outlined" density="compact" class="rounded-lg mb-2"></v-text-field>
                 
                 <label class="text-caption font-weight-bold mb-1 d-block">Course/Major</label>
-                <v-text-field v-model="editForm.course" variant="outlined" density="compact" class="rounded-lg mb-2"></v-text-field>
+                <v-text-field v-model="profile.course" variant="outlined" density="compact" class="rounded-lg mb-2"></v-text-field>
 
                 <label class="text-caption font-weight-bold mb-1 d-block">Year of Study</label>
-                <v-text-field v-model="editForm.year" variant="outlined" density="compact" class="rounded-lg mb-2"></v-text-field>
+                <v-text-field v-model="profile.year" variant="outlined" density="compact" class="rounded-lg mb-2"></v-text-field>
               </v-col>
               
               <v-col cols="12" sm="6">
                 <label class="text-caption font-weight-bold mb-1 d-block">Email Address</label>
-                <v-text-field v-model="editForm.email" variant="outlined" density="compact" class="rounded-lg mb-2"></v-text-field>
+                <v-text-field v-model="profile.email" variant="outlined" density="compact" class="rounded-lg mb-2"></v-text-field>
                 
                 <label class="text-caption font-weight-bold mb-1 d-block">Phone Number</label>
-                <v-text-field v-model="editForm.phone" variant="outlined" density="compact" class="rounded-lg mb-2"></v-text-field>
+                <v-text-field v-model="profile.phone" variant="outlined" density="compact" class="rounded-lg mb-2"></v-text-field>
                 
                 <label class="text-caption font-weight-bold mb-1 d-block">Store Categories (Select all that apply)</label>
                 <v-select 
-                  v-model="editForm.storeCategories" 
+                  v-model="profile.storeCategories" 
                   :items="categoryOptions" 
                   multiple 
                   chips 
@@ -224,7 +253,7 @@ const triggerSnackbar = (text: string) => {
 
               <v-col cols="12" class="pt-0">
                 <label class="text-caption font-weight-bold mb-1 d-block">About Me / Bio</label>
-                <v-textarea v-model="editForm.bio" variant="outlined" rows="3" auto-grow hide-details class="rounded-lg"></v-textarea>
+                <v-textarea v-model="profile.bio" variant="outlined" rows="3" auto-grow hide-details class="rounded-lg"></v-textarea>
               </v-col>
             </v-row>
             
