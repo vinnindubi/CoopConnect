@@ -15,3 +15,6 @@ export const getUserProfile = () => {
 export const logoutUser = () => {
   return apiClient.post('/logout');
 };
+export const  updateUser = (profileData: object)=>{
+  return apiClient.post('/userEdit',profileData);
+}

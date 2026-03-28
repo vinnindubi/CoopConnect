@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted} from 'vue';
-import { getUserProfile } from '@/services/authService';
+import { getUserProfile, updateUser } from '@/services/authService';
+import router from '@/router';
 
 // ==========================================
 // 1. STATE: Personal Information
@@ -23,7 +24,7 @@ const snackbarText = ref('');
 // });
 
 const profile = ref({
-  name:'',
+  fullname:'',
   admission:'',
   email:'',
   course: '',
@@ -33,22 +34,11 @@ const profile = ref({
   avatar : '',
   coverPhoto:'',
   verificationStatus:'',
-  storeCategories: []
+  store_categories: []
 });
 const categoryOptions = ['Clothing', 'Electronics', 'Academic Material', 'Services', 'Dorm Gear', 'Food & Snacks', 'Other'];
 
-const editForm = ref(JSON.parse(JSON.stringify(profile.value)));
-
-const saveProfile = () => {
-  profile.value = JSON.parse(JSON.stringify(editForm.value));
-  isEditingProfile.value = false;
-  triggerSnackbar('Profile updated successfully!');
-};
-
-const cancelEdit = () => {
-  editForm.value = JSON.parse(JSON.stringify(profile.value));
-  isEditingProfile.value = false;
-};
+// const editForm = ref(JSON.parse(JSON.stringify(profile.value)));
 
 // ==========================================
 // 2. STATE: Articles
@@ -126,15 +116,52 @@ const triggerSnackbar = (text: string) => {
 };
 const getUser = async () => {
   try{
+    isEditingProfile.value = true; 
        const response = await getUserProfile();
        const userData = response.data.data;
-       profile.value.name = userData.fullname;
+       profile.value.fullname = userData.fullname;
        profile.value.email = userData.email;
-       profile.value.admission = userData.admission
+       profile.value.admission = userData.admission,
+       profile.value.phone = userData.phone,
+       profile.value.verificationStatus = userData.verification_status;
+       profile.value.course = userData.course;
+       profile.value.year = userData.year;
+       profile.value.bio = userData.bio;
+       profile.value.coverPhoto = userData.cover_photo;
+       let rawCategories = userData.store_categories || [];
+
+       // SAFETY CHECK: If Laravel accidentally sent a string, convert it back to an array!
+       if (typeof rawCategories === 'string') {
+         try {
+           rawCategories = JSON.parse(rawCategories);
+         } catch (e) {
+           console.error("Could not parse categories string");
+           rawCategories = []; // Fallback if the string is broken
+         }
+       }
+       //  Assign the guaranteed array to your profile
+       profile.value.store_categories = rawCategories;
+
   }catch(error){
     console.error('Error fetching profile:', error);
-  }
-  
+  } 
+}
+
+const cancelEdit = () => {
+  isEditingProfile.value = false;
+};
+
+const handleUpdateProfile = async () =>{
+  try{
+       
+   const response = await updateUser(profile.value);
+   
+  //  console.log(response);
+   triggerSnackbar('Profile updated successfully!');
+    }
+    catch(error){
+      console.log(error)
+    }
 }
 onMounted(() => {
   getUser();
@@ -172,7 +199,7 @@ onMounted(() => {
           <div v-if="!isEditingProfile">
             
             <h1 class="text-h4 font-weight-black text-high-emphasis mb-2 d-flex align-center flex-wrap">
-              <span class="mr-3">{{ profile.name }}</span>
+              <span class="mr-3">{{ profile.fullname }}</span>
               <v-chip 
                 :color="profile.verificationStatus === 'Verified' ? 'success' : 'warning'" 
                 variant="tonal"
@@ -207,8 +234,8 @@ onMounted(() => {
               
               <v-col cols="12" sm="6" md="8" class="mb-2">
                 <div class="text-caption text-medium-emphasis font-weight-bold mb-2 text-uppercase">Store Categories</div>
-                <div v-if="profile.storeCategories.length > 0" class="d-flex flex-wrap">
-                  <v-chip v-for="cat in profile.storeCategories" :key="cat" size="small" variant="outlined" class="font-weight-bold border-opacity-50 mr-2 mb-2">
+                <div v-if="profile.store_categories && profile.store_categories.length > 0" class="d-flex flex-wrap">
+                  <v-chip v-for="cat in profile.store_categories" :key="cat" size="small" variant="outlined" class="font-weight-bold border-opacity-50 mr-2 mb-2">
                     {{ cat }}
                   </v-chip>
                 </div>
@@ -217,11 +244,11 @@ onMounted(() => {
             </v-row>
           </div>
 
-          <v-form v-else @submit.prevent="saveProfile" class="mt-4">
+          <v-form v-else @submit.prevent="handleUpdateProfile" class="mt-4">
             <v-row>
               <v-col cols="12" sm="6">
                 <label class="text-caption font-weight-bold mb-1 d-block">Full Name</label>
-                <v-text-field v-model="profile.name" variant="outlined" density="compact" class="rounded-lg mb-2"></v-text-field>
+                <v-text-field v-model="profile.fullname" variant="outlined" density="compact" class="rounded-lg mb-2"></v-text-field>
                 
                 <label class="text-caption font-weight-bold mb-1 d-block">Course/Major</label>
                 <v-text-field v-model="profile.course" variant="outlined" density="compact" class="rounded-lg mb-2"></v-text-field>
@@ -239,7 +266,7 @@ onMounted(() => {
                 
                 <label class="text-caption font-weight-bold mb-1 d-block">Store Categories (Select all that apply)</label>
                 <v-select 
-                  v-model="profile.storeCategories" 
+                  v-model="profile.store_categories" 
                   :items="categoryOptions" 
                   multiple 
                   chips 

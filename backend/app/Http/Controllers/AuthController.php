@@ -82,7 +82,7 @@ public function updateUserData(Request $request) {
         'course'           => $request->course,
         'bio'              => $request->bio,
         'phone'            => $request->phone,
-        'store_categories' => $request->storeCategories,  // Vue sends 'storeCategories'
+        'store_categories' => $request->store_categories,  // Vue sends 'storeCategories'
     ]);
 
     // 2. Fetch the fresh, newly updated user from the database
