@@ -14,6 +14,8 @@ import Forum from '@/components/pages/users/Forum.vue';
 import Feedback from '@/components/pages/forms/Feedback.vue';
 import MarketPlace from '@/components/pages/users/MarketPlace.vue';
 import Settings from '@/components/pages/users/Settings.vue';
+import AdminUsers from '@/components/pages/admin/AdminUsers.vue';
+import { components } from 'vuetify/dist/vuetify.js';
 const routes=[{
     path:'/',
     component:DefaultLayout,
@@ -47,9 +49,11 @@ const routes=[{
     {
         path:'/admin',
         component:AdminLayout,
-        children:[
-            {path:'/admin',name:'admin',component:AdminDashboard}
-        ]
+        children: [
+        {
+          path: '',component: AdminDashboard
+        }
+      ]
     }
 ]
 

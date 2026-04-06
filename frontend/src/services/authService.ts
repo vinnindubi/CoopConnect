@@ -18,3 +18,11 @@ export const logoutUser = () => {
 export const  updateUser = (profileData: object)=>{
   return apiClient.post('/userEdit',profileData);
 }
+export const getAllUsers = ()=>{
+  return apiClient.get('/allUsers');
+}
+// src/services/authService.ts
+
+export const getPendingVerifications = () => {
+  return apiClient.get('/admin/pending-sellers');
+}

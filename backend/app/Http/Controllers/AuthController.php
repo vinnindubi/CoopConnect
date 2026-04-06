@@ -94,4 +94,52 @@ public function updateUserData(Request $request) {
         "data"    => $updatedUser
     ]);
 }
+public function getAllUsers(){
+    $users = User::all();
+    return response()->json([
+        "message" => "users returned successfully",
+        "data" => $users
+    ]);
+}
+// app/Http/Controllers/AuthController.php
+
+public function getPendingSellers() {
+    $pendingUsers = User::where('verification_status', 'pending')->get();
+
+    // Map through the users and format the data before sending it to Vue
+    $formattedUsers = $pendingUsers->map(function ($user) {
+        
+        // 1. Grab the raw category data
+        $rawCategories = $user->store_categories;
+        $parsedCategories = [];
+
+        // 2. Safely convert it to a real array based on how it's stored
+        if (is_string($rawCategories)) {
+            // Try to decode it if it's a JSON string (e.g., '["Clothing"]')
+            $decoded = json_decode($rawCategories, true);
+            
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                $parsedCategories = $decoded;
+            } else {
+                // If it's just comma-separated (e.g., 'Clothing,Tech'), split it
+                $parsedCategories = array_map('trim', explode(',', $rawCategories));
+            }
+        } elseif (is_array($rawCategories)) {
+            $parsedCategories = $rawCategories;
+        }
+
+        // 3. Return exactly what Vue needs
+        return [
+            'id' => $user->id,
+            'fullname' => $user->fullname,
+            'store_categories' => $parsedCategories, // Now guaranteed to be an array!
+            'id_proof' => $user->id_proof,
+            'updated_at' => $user->updated_at,
+        ];
+    });
+    return response()->json([
+        'message' => 'Pending sellers fetched successfully',
+        'data' => $formattedUsers // Send the mapped data instead of the raw database output
+    ], 200);
+}
  }

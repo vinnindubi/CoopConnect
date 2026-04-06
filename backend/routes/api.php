@@ -13,6 +13,8 @@ Route::post('/register',[AuthController::class,'register']);
 
 Route::middleware('auth:api')->group(function (){
     Route::get('/user',[AuthController::class,'getUser']);
+    Route::get('/allUsers',[AuthController::class,'getAllUsers']);
+    Route::get('/admin/pending-sellers', [AuthController::class, 'getPendingSellers']);
     Route::post('/userEdit',[AuthController::class,'updateUserData']);
     Route::post ('/logout',[AuthController::class,'logout']);
     Route::get('/articles',[ArticleController::class,'index']);
