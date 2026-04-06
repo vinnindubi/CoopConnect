@@ -103,7 +103,7 @@ const socialLinks = [
             <p class="text-body-2 text-medium-emphasis font-weight-medium mb-6" style="line-height: 1.4;">
               Turn your old textbooks and electronics into cash today.
             </p>
-            <v-btn color="primary" variant="flat" size="large" block class="text-none font-weight-black rounded-lg mt-auto elevation-2">
+            <v-btn  to="/applySeller" color="primary" variant="flat" size="large" block class="text-none font-weight-black rounded-lg mt-auto elevation-2">
               Apply Now
             </v-btn>
           </v-card>

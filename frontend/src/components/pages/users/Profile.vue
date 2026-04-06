@@ -115,8 +115,7 @@ const triggerSnackbar = (text: string) => {
   showSnackbar.value = true;
 };
 const getUser = async () => {
-  try{
-    isEditingProfile.value = true; 
+  try{ 
        const response = await getUserProfile();
        const userData = response.data.data;
        profile.value.fullname = userData.fullname;
@@ -158,6 +157,7 @@ const handleUpdateProfile = async () =>{
    
   //  console.log(response);
    triggerSnackbar('Profile updated successfully!');
+   isEditingProfile.value = false;
     }
     catch(error){
       console.log(error)
@@ -298,7 +298,7 @@ onMounted(() => {
             <h2 class="text-h5 font-weight-black text-high-emphasis">My Articles</h2>
             <p class="text-body-2 text-medium-emphasis mt-1">Manage your stories, tips, and experiences.</p>
           </div>
-          <v-btn v-if="articles.length > 0" color="primary" variant="flat" size="small" class="text-none font-weight-bold rounded-lg mb-2" @click="triggerArticleAction('Drafting New')">
+          <v-btn to='/newArticle' v-if="articles.length > 0" color="primary" variant="flat" size="small" class="text-none font-weight-bold rounded-lg mb-2" @click="triggerArticleAction('Drafting New')">
             <v-icon start icon="mdi-plus"></v-icon> Write Article
           </v-btn>
         </div>
@@ -345,8 +345,8 @@ onMounted(() => {
             <h2 class="text-h5 font-weight-black text-high-emphasis">My Store</h2>
             <p class="text-body-2 text-medium-emphasis mt-1">Manage the items you are selling on campus.</p>
           </div>
-          <v-btn v-if="catalogue.length > 0" color="primary" variant="flat" size="small" class="text-none font-weight-bold rounded-lg mb-2" @click="triggerProductAction('Adding New')">
-            <v-icon start icon="mdi-plus"></v-icon> Add Product
+          <v-btn to = '/addProduct' v-if="catalogue.length > 0" color="primary" variant="flat" size="small" class="text-none font-weight-bold rounded-lg mb-2" @click="triggerProductAction('Adding New')">
+            <v-icon  start icon="mdi-plus"></v-icon> Add Product
           </v-btn>
         </div>
 

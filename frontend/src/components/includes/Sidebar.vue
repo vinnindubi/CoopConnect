@@ -37,10 +37,6 @@ provide("toggleSidebar", toggleSidebar);
       <v-list-item color="primary" prepend-icon="mdi-cog" to="/settings">
         <v-list-item-title>Settings</v-list-item-title>
       </v-list-item>
-
-      <v-list-item color="primary" prepend-icon="mdi-logout" to="/login">    
-        <v-list-item-title>Login</v-list-item-title>
-      </v-list-item>
     </v-list>
   </v-navigation-drawer>
 </template>

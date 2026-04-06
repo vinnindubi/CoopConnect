@@ -80,6 +80,7 @@ public function updateUserData(Request $request) {
         'fullname'         => $request->fullname,             // Vue sends 'name'
         'email'            => $request->email,
         'course'           => $request->course,
+        'year'             =>$request ->year,
         'bio'              => $request->bio,
         'phone'            => $request->phone,
         'store_categories' => $request->store_categories,  // Vue sends 'storeCategories'

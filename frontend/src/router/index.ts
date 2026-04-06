@@ -15,6 +15,9 @@ import Feedback from '@/components/pages/forms/Feedback.vue';
 import MarketPlace from '@/components/pages/users/MarketPlace.vue';
 import Settings from '@/components/pages/users/Settings.vue';
 import AdminUsers from '@/components/pages/admin/AdminUsers.vue';
+import ProductForm from '@/components/pages/forms/ProductForm.vue';
+import ArticleForm from '@/components/pages/forms/ArticleForm.vue';
+import SellerApplicationForm from '@/components/pages/forms/SellerApplicationForm.vue';
 import { components } from 'vuetify/dist/vuetify.js';
 const routes=[{
     path:'/',
@@ -28,7 +31,10 @@ const routes=[{
         {path:'feedback',name:'Feedback',component:Feedback},
         {path:'profile',name:'Profile',component:Profile},
         {path:'settings',name:'Settings',component: Settings},
-        {path:'editprofile',name:'EditProfile',component:EditProfile}
+        {path:'editprofile',name:'EditProfile',component:EditProfile},
+        {path:'addProduct',name:'AddProduct',component:ProductForm},
+        {path: 'newArticle',name:'NewArticle',component:ArticleForm},
+        {path:'applySeller', name:'ApplySeller',component:SellerApplicationForm}
     ]
     },
     {
