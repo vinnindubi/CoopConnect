@@ -49,6 +49,11 @@ class User extends Authenticatable
   public function comments(){
     return $this->hasManyThrough(Comment::class, Article::class);
   }
+  public function groups(){
+    return $this ->belongsToMany(Group::class)
+                -> withPivot('role','title')
+                -> withTimestamps();
+  }
     /**
      * Get the attributes that should be cast.
      *

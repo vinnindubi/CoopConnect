@@ -24,6 +24,9 @@ provide("toggleSidebar", toggleSidebar);
       <v-list-item color="primary" prepend-icon="mdi-account-group" to="/forums">
         <v-list-item-title>Forums</v-list-item-title>
       </v-list-item>
+      <v-list-item color="primary" prepend-icon="mdi-account-group-outline" to="/clubsAndSocieties">
+        <v-list-item-title>Clubs & Societies</v-list-item-title>
+      </v-list-item>
       <v-list-item color="primary" prepend-icon="mdi-cart" to="/marketplace">
         <v-list-item-title>MarketPlace</v-list-item-title>
       </v-list-item>
@@ -32,10 +35,6 @@ provide("toggleSidebar", toggleSidebar);
       </v-list-item>
       <v-list-item color="primary" prepend-icon="mdi-account" to="/profile">
         <v-list-item-title >Profile</v-list-item-title>
-      </v-list-item>
-
-      <v-list-item color="primary" prepend-icon="mdi-account-group-outline" to="/clubsAndSocieties">
-        <v-list-item-title>Clubs & Societies</v-list-item-title>
       </v-list-item>
     </v-list>
   </v-navigation-drawer>
