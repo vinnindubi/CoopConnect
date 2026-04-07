@@ -8,7 +8,8 @@ const quickLinks = [
   { name: 'Dashboard', icon: 'mdi-view-dashboard-outline', route: '/' },
   { name: 'Campus Store', icon: 'mdi-storefront-outline', route: '/marketplace' },
   { name: 'Upcoming Events', icon: 'mdi-calendar-week', route: '/events' },
-  { name: 'Student Stories', icon: 'mdi-fountain-pen-tip', route: '/articles' }
+  { name: 'Student Stories', icon: 'mdi-fountain-pen-tip', route: '/articles' },
+  {name : 'register Club or Society', icon:'mdi-fountain-pen-tip', route:'/registerClubOrSociety'}
 ];
 
 const supportLinks = [

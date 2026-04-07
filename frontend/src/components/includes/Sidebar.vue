@@ -34,8 +34,8 @@ provide("toggleSidebar", toggleSidebar);
         <v-list-item-title >Profile</v-list-item-title>
       </v-list-item>
 
-      <v-list-item color="primary" prepend-icon="mdi-cog" to="/settings">
-        <v-list-item-title>Settings</v-list-item-title>
+      <v-list-item color="primary" prepend-icon="mdi-account-group-outline" to="/clubsAndSocieties">
+        <v-list-item-title>Clubs & Societies</v-list-item-title>
       </v-list-item>
     </v-list>
   </v-navigation-drawer>

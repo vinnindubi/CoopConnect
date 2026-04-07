@@ -19,11 +19,14 @@ import ProductForm from '@/components/pages/forms/ProductForm.vue';
 import ArticleForm from '@/components/pages/forms/ArticleForm.vue';
 import SellerApplicationForm from '@/components/pages/forms/SellerApplicationForm.vue';
 import { components } from 'vuetify/dist/vuetify.js';
+import ClubsAndSocieties from '@/components/pages/users/ClubsAndSocieties.vue';
+import GroupRegistrationForm from '@/components/pages/forms/GroupRegistrationForm.vue';
+import ClubPublicProfile from '@/components/pages/clubs/ClubPublicProfile.vue';
 const routes=[{
     path:'/',
     component:DefaultLayout,
     children:[ 
-        {path:'/home',name:'Home',component:Dashboard},
+        {path:'home',name:'Home',component:Dashboard},
         {path:'events',name:'Events',component:Events},
         {path:'articles',name:'Articles',component: Articles}, //typescript enforces need for component. ensure you put it.
         {path:'forums',name:'Forums',component:Forum},
@@ -34,7 +37,10 @@ const routes=[{
         {path:'editprofile',name:'EditProfile',component:EditProfile},
         {path:'addProduct',name:'AddProduct',component:ProductForm},
         {path: 'newArticle',name:'NewArticle',component:ArticleForm},
-        {path:'applySeller', name:'ApplySeller',component:SellerApplicationForm}
+        {path:'applySeller', name:'ApplySeller',component:SellerApplicationForm},
+        {path:'clubsAndSocieties',name:'ClubsAndSocieties',component:ClubsAndSocieties},
+        {path:'registerClubOrSociety', name :'registerClubOrSociety',component:GroupRegistrationForm},
+        {path: '/clubsAndSocieties/:id',name: 'ClubProfile',component: ClubPublicProfile },
     ]
     },
     {
