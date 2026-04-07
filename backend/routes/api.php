@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\GroupController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -22,5 +23,6 @@ Route::middleware('auth:api')->group(function (){
     Route::post('/articles/store',[ArticleController::class,'store']);
     Route::put('updateArticle/{id}',[ArticleController::class,'update']);
     Route::delete('/articles/delete/{id}',[ArticleController::class,'destroy']);
+    Route ::apiResource('/groups',GroupController::class);
 });
 
