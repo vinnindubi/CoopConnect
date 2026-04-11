@@ -22,6 +22,8 @@ import { components } from 'vuetify/dist/vuetify.js';
 import ClubsAndSocieties from '@/components/pages/users/ClubsAndSocieties.vue';
 import GroupRegistrationForm from '@/components/pages/forms/GroupRegistrationForm.vue';
 import ClubPublicProfile from '@/components/pages/clubs/ClubPublicProfile.vue';
+import ManageClub from '@/components/pages/clubs/ManageClub.vue';
+import Donate from '@/components/pages/users/Donate.vue';
 const routes=[{
     path:'/',
     component:DefaultLayout,
@@ -41,6 +43,8 @@ const routes=[{
         {path:'clubsAndSocieties',name:'ClubsAndSocieties',component:ClubsAndSocieties},
         {path:'registerClubOrSociety', name :'registerClubOrSociety',component:GroupRegistrationForm},
         {path: '/clubsAndSocieties/:id',name: 'ClubProfile',component: ClubPublicProfile },
+        {path:'/clubs/:id/manage',name:'ManageClub',component:ManageClub},
+        {path:'/donate',name:'Donations',component:Donate}
     ]
     },
     {

@@ -9,18 +9,18 @@ const quickLinks = [
   { name: 'Campus Store', icon: 'mdi-storefront-outline', route: '/marketplace' },
   { name: 'Upcoming Events', icon: 'mdi-calendar-week', route: '/events' },
   { name: 'Student Stories', icon: 'mdi-fountain-pen-tip', route: '/articles' },
-  {name : 'register Club or Society', icon:'mdi-fountain-pen-tip', route:'/registerClubOrSociety'}
+  { name: 'Register Club or Society', icon: 'mdi-account-group-outline', route: '/registerClubOrSociety' }
 ];
 
 const supportLinks = [
-  { name: 'Help Center' },
-  { name: 'Safety & Trust' },
+  { name: 'Help Center', route: '/help' },
+  { name: 'Safety & Trust', route: '/safety' },
   { name: 'Report an Issue', route:'/feedback' },
   { name: 'Leave Feedback', route: '/feedback' }
 ];
 
 const socialLinks = [
-  {  icon: 'mdi-instagram', url:'https://instagram.com'},
+  { icon: 'mdi-instagram', url:'https://instagram.com'},
   { icon: 'mdi-twitter' ,url:'https://x.com'},
   { icon: 'mdi-linkedin',url:'https://linkedin.com' }
 ];
@@ -78,7 +78,7 @@ const socialLinks = [
           </div>
         </v-col>
 
-        <v-col cols="12" sm="4" md="3" class="mb-8 mb-sm-0">
+        <v-col cols="12" sm="4" md="2" class="mb-8 mb-sm-0">
           <h4 class="text-subtitle-1 font-weight-black text-white text-uppercase mb-5" style="letter-spacing: 1px;">Support</h4>
           <div class="d-flex flex-column align-start">
             <v-btn 
@@ -95,19 +95,40 @@ const socialLinks = [
           </div>
         </v-col>
 
-        <v-col cols="12" sm="4" md="3">
-          <v-card class="bg-surface rounded-xl pa-6 text-center h-100 d-flex flex-column justify-center elevation-4" border hover>
-            <v-avatar color="primary" variant="tonal" size="56" class="mb-4 mx-auto rounded-circle">
-              <v-icon icon="mdi-storefront-outline" size="28"></v-icon>
-            </v-avatar>
-            <h4 class="text-h6 font-weight-black text-high-emphasis mb-2">Become a Seller</h4>
-            <p class="text-body-2 text-medium-emphasis font-weight-medium mb-6" style="line-height: 1.4;">
-              Turn your old textbooks and electronics into cash today.
-            </p>
-            <v-btn  to="/applySeller" color="primary" variant="flat" size="large" block class="text-none font-weight-black rounded-lg mt-auto elevation-2">
-              Apply Now
-            </v-btn>
-          </v-card>
+        <v-col cols="12" sm="12" md="4" class="d-flex align-center">
+          <v-row>
+            
+            <v-col cols="12" sm="6">
+              <v-card class="bg-surface rounded-xl pa-5 text-center d-flex flex-column justify-center elevation-4 mx-auto" border hover style="border-top: 4px solid rgb(var(--v-theme-primary)) !important; max-width: 250px;">
+                <v-avatar color="primary" variant="tonal" size="48" class="mb-3 mx-auto rounded-circle">
+                  <v-icon icon="mdi-storefront-outline" size="24"></v-icon>
+                </v-avatar>
+                <h4 class="text-subtitle-1 font-weight-black text-high-emphasis mb-1 leading-tight">Become a Seller</h4>
+                <p class="text-caption text-medium-emphasis font-weight-medium mb-4" style="line-height: 1.4;">
+                  Turn old gear into cash.
+                </p>
+                <v-btn to="/applySeller" color="primary" variant="flat" block class="text-none font-weight-black rounded-lg elevation-2 mt-auto">
+                  Apply Now
+                </v-btn>
+              </v-card>
+            </v-col>
+
+            <v-col cols="12" sm="6">
+              <v-card class="bg-surface rounded-xl pa-5 text-center d-flex flex-column justify-center elevation-4 mx-auto" border hover style="border-top: 4px solid #4CAF50 !important; max-width: 250px;">
+                <v-avatar color="success" variant="tonal" size="48" class="mb-3 mx-auto rounded-circle">
+                  <v-icon icon="mdi-hand-heart-outline" size="24"></v-icon>
+                </v-avatar>
+                <h4 class="text-subtitle-1 font-weight-black text-high-emphasis mb-1 leading-tight">Feed a Comrade</h4>
+                <p class="text-caption text-medium-emphasis font-weight-medium mb-4" style="line-height: 1.4;">
+                  Support fellow students.
+                </p>
+                <v-btn to="/donate" color="success" variant="flat" block class="text-none font-weight-black rounded-lg elevation-2 mt-auto">
+                  <v-icon start icon="mdi-cellphone"></v-icon> M-Pesa
+                </v-btn>
+              </v-card>
+            </v-col>
+
+          </v-row>
         </v-col>
         
       </v-row>
@@ -131,3 +152,10 @@ const socialLinks = [
     </v-container>
   </v-footer>
 </template>
+
+<style scoped>
+/* Ensure titles are clean and don't push heights on small screens */
+.leading-tight { 
+  line-height: 1.2 !important; 
+}
+</style>

@@ -11,71 +11,76 @@ const isLoading = ref(true);
 const showSnackbar = ref(false);
 const snackbarText = ref('');
 
-// --- MOCK DATA: The Highly Detailed Club Profile ---
+// --- STATE: Start with empty data ---
 const club = ref<any>(null);
-
-// Openly Displayed Leadership
-const leaders = ref([
-  { id: 1, name: 'Alice Wanjiku', role: 'Chairperson', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150' },
-  { id: 2, name: 'David Omondi', role: 'Secretary', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=150' },
-  { id: 3, name: 'Catherine Mutua', role: 'Project Lead', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=150' }
-]);
-
-// 1. Announcements
-const announcements = ref([
-  { 
-    id: 1, author: 'Alice Wanjiku', role: 'Chairperson', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150',
-    content: 'Welcome to the new semester! Weekly meetings resume this Friday. We have a guest speaker from Safaricom joining us to talk about Cloud Infrastructure. Don\'t miss it!', 
-    timeAgo: '2 hours ago', likes: 45, isLiked: false
-  }
-]);
-
-// 2. Future Plans & Events
-const plans = ref([
-  { id: 101, title: 'Annual Campus Hackathon', date: 'Nov 12, 2025', desc: 'Our flagship 48-hour coding competition. We are currently looking for sponsors and participants.', type: 'Major Event', icon: 'mdi-laptop' },
-  { id: 102, title: 'High School Mentorship Outreach', date: 'Jan 2026', desc: 'We plan to visit 5 local high schools to teach basic Python and web design to graduating students.', type: 'Community Plan', icon: 'mdi-hand-heart' }
-]);
-
-// 3. Past Successes & Engagements
-const successes = ref([
-  { 
-    id: 201, title: '1st Place: National Inter-Varsity Tech Expo', date: 'August 2025', 
-    desc: 'Our team built an AI-driven agricultural supply chain app that won the top prize of KES 100,000 against 20 other universities.', 
-    image: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&q=80&w=600'
-  },
-  { 
-    id: 202, title: 'Developed the Campus E-Voting System', date: 'March 2025', 
-    desc: 'Partnered with the student council to build and deploy a secure online voting portal used by over 5,000 students in the last election.', 
-    image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=600'
-  }
-]);
+const leaders = ref<any[]>([]);
+const announcements = ref<any[]>([]);
+const plans = ref<any[]>([]);
+const successes = ref<any[]>([]);
 
 // --- Methods ---
 const handleToggleMembership = async () => {
   if (!club.value) return;
-  const updatedGroup = await toggleMembership(club.value.id);
-  club.value = updatedGroup;
   
-  const actionText = club.value.currentUserRole === 'member' ? 'joined' : 'left';
-  snackbarText.value = `You have successfully ${actionText} ${club.value.name}.`;
-  showSnackbar.value = true;
+  try {
+    const response = await toggleMembership(club.value.id);
+    
+    // Update the UI instantly with the response from Laravel
+    club.value.currentUserRole = response.currentUserRole;
+    club.value.membersCount = response.newMembersCount;
+    
+    const actionText = club.value.currentUserRole === 'member' ? 'joined' : 'left';
+    snackbarText.value = `You have successfully ${actionText} ${club.value.name}.`;
+    showSnackbar.value = true;
+  } catch (error) {
+    snackbarText.value = 'Failed to update membership. Please try again.';
+    showSnackbar.value = true;
+  }
 };
 
 const toggleLike = (post: any) => {
   post.isLiked = !post.isLiked;
   post.isLiked ? post.likes++ : post.likes--;
+  // Note: In a real app, you would also make an axios.post() call here to save the like to the DB!
 };
 
 // --- Lifecycle ---
 onMounted(async () => {
   const clubId = Number(route.params.id);
   try {
+    // 1. Fetch the data from Laravel
     const data = await fetchGroupById(clubId);
+    
+    // 2. Assign the main club details
     club.value = data;
-    // Injecting a powerful mission statement for the mockup
-    club.value.mission = "To bridge the gap between classroom theory and industry reality by building real-world solutions, fostering innovation, and equipping students with future-proof skills.";
-    setTimeout(() => { isLoading.value = false; }, 400);
+    
+    // 3. Populate the arrays directly from the backend relationships
+    leaders.value = data.leaders || [];
+    announcements.value = data.posts || [];
+    
+    // 4. Map the Events table data to match your UI layout expectations
+    plans.value = (data.events || []).map((e: any) => ({
+      id: e.id,
+      title: e.title,
+      date: new Date(e.event_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+      desc: e.description,
+      type: e.event_type,
+      icon: 'mdi-calendar-star' 
+    }));
+
+    // 5. Map the Achievements table data to match your UI layout expectations
+    successes.value = (data.achievements || []).map((a: any) => ({
+      id: a.id,
+      title: a.title,
+      date: a.date_achieved,
+      desc: a.description,
+      image: a.image_path || 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&q=80&w=600'
+    }));
+
+    isLoading.value = false;
+    
   } catch (error) {
+    console.error("Failed to load club profile");
     router.push('/clubsAndSocieties'); 
   }
 });
@@ -120,7 +125,7 @@ onMounted(async () => {
           
           <v-col cols="12" md="8" lg="8">
             
-            <v-card class="rounded-xl border-opacity-25 bg-surface mb-10 pa-6 pa-md-8 text-center" border elevation="1" style="border-top: 4px solid rgb(var(--v-theme-primary)) !important;">
+            <v-card v-if="club.mission" class="rounded-xl border-opacity-25 bg-surface mb-10 pa-6 pa-md-8 text-center" border elevation="1" style="border-top: 4px solid rgb(var(--v-theme-primary)) !important;">
               <div class="text-overline font-weight-black text-primary mb-2 tracking-widest">Our Mission</div>
               <p class="text-h5 font-weight-medium text-high-emphasis leading-relaxed font-italic mb-0">
                 "{{ club.mission }}"
@@ -131,7 +136,7 @@ onMounted(async () => {
               <h2 class="text-h5 font-weight-black text-high-emphasis d-flex align-center mb-6">
                 <v-icon icon="mdi-bullhorn-outline" class="mr-3 text-primary"></v-icon> Latest Announcements
               </h2>
-              <div class="d-flex flex-column gap-4">
+              <div v-if="announcements.length > 0" class="d-flex flex-column gap-4">
                 <v-card v-for="post in announcements" :key="post.id" class="rounded-xl border-opacity-25 bg-surface transition-swing" border elevation="1">
                   <div class="pa-5">
                     <div class="d-flex align-center justify-space-between mb-4">
@@ -155,13 +160,16 @@ onMounted(async () => {
                   </div>
                 </v-card>
               </div>
+              <div v-else class="text-body-1 text-medium-emphasis text-center py-6 border border-dashed rounded-xl border-opacity-25">
+                No recent announcements.
+              </div>
             </div>
 
             <div class="mb-10">
               <h2 class="text-h5 font-weight-black text-high-emphasis d-flex align-center mb-6">
                 <v-icon icon="mdi-rocket-launch-outline" class="mr-3 text-primary"></v-icon> Future Plans & Roadmap
               </h2>
-              <v-row>
+              <v-row v-if="plans.length > 0">
                 <v-col cols="12" sm="6" v-for="plan in plans" :key="plan.id">
                   <v-card class="rounded-xl border-opacity-25 bg-surface h-100 d-flex flex-column pa-5" border elevation="1">
                     <v-avatar color="primary" variant="tonal" size="48" class="mb-4">
@@ -173,13 +181,16 @@ onMounted(async () => {
                   </v-card>
                 </v-col>
               </v-row>
+              <div v-else class="text-body-1 text-medium-emphasis text-center py-6 border border-dashed rounded-xl border-opacity-25">
+                No upcoming events listed yet.
+              </div>
             </div>
 
             <div class="mb-10">
               <h2 class="text-h5 font-weight-black text-high-emphasis d-flex align-center mb-6">
                 <v-icon icon="mdi-trophy-award" class="mr-3 text-warning"></v-icon> Track Record & Successes
               </h2>
-              <div class="d-flex flex-column gap-6">
+              <div v-if="successes.length > 0" class="d-flex flex-column gap-6">
                 <v-card v-for="item in successes" :key="item.id" class="rounded-xl border-opacity-25 bg-surface overflow-hidden d-flex flex-column flex-sm-row" border elevation="1">
                   <v-img :src="item.image" cover width="100%" class="bg-surface-variant flex-shrink-0" style="max-width: 300px; min-height: 200px;"></v-img>
                   <div class="pa-5 pa-md-6 d-flex flex-column justify-center">
@@ -189,6 +200,9 @@ onMounted(async () => {
                   </div>
                 </v-card>
               </div>
+              <div v-else class="text-body-1 text-medium-emphasis text-center py-6 border border-dashed rounded-xl border-opacity-25">
+                Check back soon for updates on our achievements!
+              </div>
             </div>
 
           </v-col>
@@ -196,7 +210,25 @@ onMounted(async () => {
           <v-col cols="12" md="4" lg="4">
             <div class="position-sticky" style="top: 24px;">
               
-              <v-card class="rounded-xl border-opacity-25 bg-surface mb-6 pa-6 text-center" border elevation="2">
+              <v-card v-if="club.currentUserRole === 'admin'" class="rounded-xl border-opacity-25 bg-surface mb-6 pa-6 text-center" border elevation="2" style="border-color: rgb(var(--v-theme-primary)) !important;">
+                <v-avatar color="primary" variant="tonal" size="56" class="mb-4">
+                  <v-icon icon="mdi-shield-crown-outline" size="32"></v-icon>
+                </v-avatar>
+                <h3 class="text-h6 font-weight-bold text-primary mb-2">You Manage This Page</h3>
+                <p class="text-body-2 text-medium-emphasis mb-6">Post announcements, schedule events, and update club details.</p>
+                <v-btn 
+                  block
+                  color="primary" 
+                  size="x-large"
+                  class="text-none font-weight-black rounded-lg"
+                  @click="router.push(`/clubs/${club.id}/manage`)"
+                >
+                  <v-icon start icon="mdi-pencil-ruler"></v-icon>
+                  Manage Club
+                </v-btn>
+              </v-card>
+
+              <v-card v-else class="rounded-xl border-opacity-25 bg-surface mb-6 pa-6 text-center" border elevation="2">
                 <h3 class="text-h6 font-weight-bold text-high-emphasis mb-2">Want to be part of this?</h3>
                 <p class="text-body-2 text-medium-emphasis mb-4">Join {{ club.membersCount }} other students currently shaping the future.</p>
                 <v-btn 
@@ -212,7 +244,7 @@ onMounted(async () => {
                 </v-btn>
               </v-card>
 
-              <v-card class="rounded-xl border-opacity-25 bg-surface mb-6" border elevation="1">
+              <v-card v-if="leaders.length > 0" class="rounded-xl border-opacity-25 bg-surface mb-6" border elevation="1">
                 <div class="pa-4 border-b border-opacity-25 font-weight-black text-uppercase text-caption text-high-emphasis tracking-widest d-flex align-center">
                   <v-icon icon="mdi-account-tie-outline" size="16" class="mr-2 text-primary"></v-icon> Leadership Team
                 </div>
@@ -245,7 +277,7 @@ onMounted(async () => {
                     <v-avatar color="primary" variant="tonal" size="40" class="mr-4"><v-icon icon="mdi-email-outline"></v-icon></v-avatar>
                     <div>
                       <div class="font-weight-bold text-high-emphasis mb-1">Contact Email</div>
-                      <div class="text-body-2 text-medium-emphasis">hello@techinnovators.co.ke</div>
+                      <div class="text-body-2 text-medium-emphasis">{{ club.contactEmail || 'Not Provided' }}</div>
                     </div>
                   </div>
                 </div>
@@ -275,11 +307,9 @@ onMounted(async () => {
 .leading-relaxed { line-height: 1.6 !important; }
 .tracking-widest { letter-spacing: 0.1em !important; }
 
-/* Gives the overlapping avatar a clean look over the dark image */
 .border-white { border-color: rgb(var(--v-theme-surface)) !important; }
 
 @media (max-width: 599px) {
-  /* On mobile, stack the image on top of text for success cards */
   .v-card.d-flex.flex-sm-row {
     flex-direction: column !important;
   }

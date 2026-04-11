@@ -1,104 +1,111 @@
-import { ref } from 'vue';
+import { 
+  getAllGroups, 
+  getGroupById, 
+  toggleGroupMembership, 
+  createGroupPost, 
+  deleteGroupPost,
+  getGroupMembers, 
+  updateMemberRole, 
+  removeGroupMember, 
+  updateGroupDetails,
+  createGroupEvent,
+  deleteGroupEvent,
+  createGroupAchievement,
+  deleteGroupAchievement
+} from '@/services/groupService';
 
-// 1. THE FAKE DATABASE
-// We use a single array to hold everything, just like the 'groups' table we discussed.
-const groupsDb = ref([
-  { 
-    id: 4, 
-    type: 'club', 
-    category: 'Tech',
-    name: 'Google Developer Student Club', 
-    membersCount: 315, 
-    meeting: 'Saturdays 10 AM', 
-    image: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&q=80&w=400', 
-    description: 'Learn coding, build apps, and participate in global hackathons.',
-    // Simulating the pivot table: Is the currently logged-in user a member?
-    currentUserRole: 'admin' // 'admin', 'member', or null
-  },
-  { 
-    id: 1, 
-    type: 'club', 
-    category: 'Media',
-    name: 'Journalism Club', 
-    membersCount: 120, 
-    meeting: 'Fridays 4 PM', 
-    image: 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&q=80&w=400', 
-    description: 'Run the campus newsletter, cover events, and learn photography and reporting.',
-    currentUserRole: null
-  },
-  { 
-    id: 101, 
-    type: 'society', 
-    category: 'Christian',
-    name: 'Christian Union (CU)', 
-    membersCount: 850, 
-    meeting: 'Wednesdays 5 PM', 
-    image: 'https://images.unsplash.com/photo-1543589077-47d81606c1bf?auto=format&fit=crop&q=80&w=400', 
-    description: 'A fellowship of students dedicated to growing in faith, prayer, and community service.',
-    currentUserRole: 'member'
-  },
-  { 
-    id: 103, 
-    type: 'society', 
-    category: 'SDA',
-    name: 'SDA Students Association', 
-    membersCount: 430, 
-    meeting: 'Saturdays 9 AM', 
-    image: 'https://images.unsplash.com/photo-1504052434569-70ad5836ab65?auto=format&fit=crop&q=80&w=400', 
-    description: 'Observing the Sabbath through worship, Bible study, and uplifting music ministries.',
-    currentUserRole: null
-  }
-]);
-
-// 2. THE FAKE API FUNCTIONS
 export function useGroups() {
   
-  // Fetch all groups (Simulates a GET request)
   const fetchAllGroups = async () => {
-    // We use a Promise with setTimeout to fake the 500ms it takes a server to respond
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(groupsDb.value);
-      }, 500);
-    });
+    const response = await getAllGroups();
+    return response.data;
   };
 
-  // Fetch a single group by its ID
   const fetchGroupById = async (id: number) => {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        const group = groupsDb.value.find(g => g.id === id);
-        if (group) {
-          resolve(group);
-        } else {
-          reject('Group not found');
-        }
-      }, 300);
-    });
+    const response = await getGroupById(id);
+    return response.data;
   };
 
-  // Toggle membership (Simulates a POST request to join/leave)
   const toggleMembership = async (id: number) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const group = groupsDb.value.find(g => g.id === id);
-        if (group) {
-          if (group.currentUserRole) {
-            group.currentUserRole = null; // Leave group
-            group.membersCount--;
-          } else {
-            group.currentUserRole = 'member'; // Join group
-            group.membersCount++;
-          }
-          resolve(group);
-        }
-      }, 400);
-    });
+    const response = await toggleGroupMembership(id);
+    return response.data;
   };
 
+  // --- POSTS ---
+  const createPost = async (groupId: number, content: string) => {
+    const response = await createGroupPost(groupId, content);
+    const newPost = response.data.post;
+    return {
+      post: {
+        id: newPost.id,
+        content: newPost.content,
+        author: 'You', 
+        role: 'Admin',
+        avatar: 'https://ui-avatars.com/api/?name=You',
+        timeAgo: 'Just now',
+        likes: 0,
+        isLiked: false
+      }
+    };
+  };
+
+  const deletePost = async (groupId: number, postId: number) => {
+    await deleteGroupPost(groupId, postId);
+  };
+
+  // --- ADMIN & MEMBERS ---
+  const fetchMembers = async (groupId: number) => {
+    const response = await getGroupMembers(groupId);
+    return response.data;
+  };
+
+  const changeMemberRole = async (groupId: number, userId: number, role: string, title: string | null) => {
+    const response = await updateMemberRole(groupId, userId, { role, title });
+    return response.data;
+  };
+
+  const kickMember = async (groupId: number, userId: number) => {
+    await removeGroupMember(groupId, userId);
+  };
+
+  const saveGroupSettings = async (groupId: number, settings: any) => {
+    const response = await updateGroupDetails(groupId, settings);
+    return response.data;
+  };
+
+  // --- MILESTONES (Events & Achievements) ---
+  const addEvent = async (groupId: number, eventData: any) => {
+    const response = await createGroupEvent(groupId, eventData);
+    return response.data;
+  };
+
+  const removeEvent = async (groupId: number, eventId: number) => {
+    await deleteGroupEvent(groupId, eventId);
+  };
+
+  const addAchievement = async (groupId: number, achievementData: any) => {
+    const response = await createGroupAchievement(groupId, achievementData);
+    return response.data;
+  };
+
+  const removeAchievement = async (groupId: number, achievementId: number) => {
+    await deleteGroupAchievement(groupId, achievementId);
+  };
+
+  // The critical return block! Everything in here is exposed to your Vue components.
   return {
     fetchAllGroups,
     fetchGroupById,
-    toggleMembership
+    toggleMembership,
+    createPost,
+    deletePost,
+    fetchMembers,
+    changeMemberRole,
+    kickMember,
+    saveGroupSettings,
+    addEvent,          // <-- Fixed!
+    removeEvent,       // <-- Fixed!
+    addAchievement,    // <-- Fixed!
+    removeAchievement  // <-- Fixed!
   };
 }
