@@ -13,15 +13,29 @@ return new class extends Migration
     {
         Schema::create('group_events', function (Blueprint $table) {
             $table->id();
-        $table->foreignId('group_id')->constrained()->cascadeOnDelete();
-        
-        $table->string('title');
-        $table->string('event_type'); // e.g., 'Major Event', 'Workshop'
-        $table->text('description');
-        $table->string('location')->nullable();
-        $table->dateTime('event_date');
-        
-        $table->timestamps();
+            
+            // Relationship
+            $table->foreignId('group_id')->constrained()->cascadeOnDelete();
+            
+            // 1. Core Event Details
+            $table->string('title');
+            $table->string('event_type'); // Your standardized constants ('Academic & Tech', etc.)
+            $table->text('description');
+            $table->dateTime('event_date');
+            
+            // 2. Location & Logistics
+            $table->string('location')->nullable(); // e.g., "Student Centre", "Google Meet"
+            $table->decimal('price', 8, 2)->default(0); // e.g., 500.00. Default 0 means "Free"
+            
+            // 3. Media & Customization
+            $table->string('image')->nullable(); // Custom banner for this specific event
+            $table->string('organizer')->nullable(); // In case a sub-committee is hosting (e.g., "Tech Dept")
+            
+            // 4. State Management (Crucial for production apps)
+            $table->boolean('is_featured')->default(false); // Easily grab the top 3 for your UI Carousel!
+            $table->string('status')->default('upcoming'); // 'upcoming', 'ongoing', 'completed', 'cancelled'
+
+            $table->timestamps();
         });
     }
 

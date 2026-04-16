@@ -4,6 +4,7 @@ use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\MpesaController;
+use App\Http\Controllers\EventController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -20,6 +21,8 @@ Route::post('/mpesa/callback', [MpesaController::class, 'callback']); // Receive
 // ==========================================
 Route::get('/groups', [GroupController::class, 'index']);
 Route::get('/groups/{group}', [GroupController::class, 'show']);
+
+Route::get('/events', [EventController::class, 'index']);
 
 // ==========================================
 // PROTECTED ROUTES (Requires Passport Token)
@@ -62,6 +65,7 @@ Route::middleware('auth:api')->group(function () {
     Route::delete('/groups/{id}/achievements/{achievementId}', [GroupController::class, 'destroyAchievement']);
     // --- Group Milestones (Events & Achievements) ---
     Route::post('/groups/{id}/events', [GroupController::class, 'storeEvent']);
+    Route::put('/groups/{id}/events/{eventId}', [GroupController::class, 'updateEvent']);
     Route::delete('/groups/{id}/events/{eventId}', [GroupController::class, 'destroyEvent']);
     Route::post('/donate/stkpush', [MpesaController::class, 'stkPush']);
     Route::get('/donate/status/{checkoutRequestId}', [MpesaController::class, 'checkTransactionStatus']);

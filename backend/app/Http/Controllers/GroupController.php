@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Group;
 use App\Models\User;
 use Str;
+use Illuminate\Validation\Rule;
 class GroupController extends Controller
 {
 public function index(){
@@ -343,6 +344,85 @@ public function toggleMembership(Request $request, $id)
 
         $achievement->update($validated);
         return response()->json(['message' => 'Achievement updated!', 'achievement' => $achievement]);
+    }
+   /**
+     * Future Plans: Create a new Event
+     */
+    public function storeEvent(Request $request, $id)
+    {
+        $group = Group::findOrFail($id);
+        
+        // Security check to ensure only admins can add events
+        if (!$this->isAdmin($group, $request->user())) {
+            return response()->json(['message' => 'Unauthorized.'], 403);
+        }
+
+        // Your standardized categories
+        $allowedCategories = [
+            'Academic', 'Social', 'Sports', 'Career'
+        ];
+
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'event_date' => 'required|date',
+            'description' => 'nullable|string',
+            'event_type' => ['required', 'string', Rule::in($allowedCategories)],
+            
+            // --- NEW FIELDS ADDED HERE ---
+            'location' => 'nullable|string|max:255',
+            // Ensure price is a number and not negative
+            'price' => 'nullable|numeric|min:0', 
+            // Accepts a string (URL or path)
+            'image' => 'nullable|string', 
+        ]);
+
+        // Create the event linked directly to this group
+        $event = $group->events()->create($validated);
+        
+        // Return the new event so Vue can instantly push it to the UI list
+        return response()->json([
+            'message' => 'Plan added successfully!', 
+            'event' => $event
+        ], 201);
+    }
+
+    /**
+     * Future Plans: Update an existing Event
+     */
+    public function updateEvent(Request $request, $id, $eventId)
+    {
+        $group = Group::findOrFail($id);
+        
+        // Security check: Only admins can edit events
+        if (!$this->isAdmin($group, $request->user())) {
+            return response()->json(['message' => 'Unauthorized.'], 403);
+        }
+
+        // Keep validation identical to storeEvent to prevent bad data
+        $allowedCategories = [
+            'Academic', 'Social', 'Sports', 'Career'
+        ];
+
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'event_date' => 'required|date',
+            'description' => 'required|string',
+            'event_type' => ['required', 'string', Rule::in($allowedCategories)],
+            
+            // --- NEW FIELDS ADDED HERE ---
+            'location' => 'nullable|string|max:255',
+            'price' => 'nullable|numeric|min:0',
+            'image' => 'nullable|string',
+        ]);
+
+        // Find the specific event and update it securely
+        $event = $group->events()->where('id', $eventId)->firstOrFail();
+        $event->update($validated);
+        
+        return response()->json([
+            'message' => 'Plan updated successfully!', 
+            'event' => $event
+        ]);
     }
 }
 

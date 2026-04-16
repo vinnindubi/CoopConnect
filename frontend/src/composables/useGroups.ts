@@ -9,6 +9,7 @@ import {
   removeGroupMember, 
   updateGroupDetails,
   createGroupEvent,
+  updateGroupEvent,
   deleteGroupEvent,
   createGroupAchievement,
   deleteGroupAchievement
@@ -78,7 +79,10 @@ export function useGroups() {
     const response = await createGroupEvent(groupId, eventData);
     return response.data;
   };
-
+const editEvent = async (groupId: number, eventId: number, eventData: any) => {
+    const response = await updateGroupEvent(groupId, eventId, eventData);
+    return response.data;
+  };
   const removeEvent = async (groupId: number, eventId: number) => {
     await deleteGroupEvent(groupId, eventId);
   };
@@ -103,9 +107,10 @@ export function useGroups() {
     changeMemberRole,
     kickMember,
     saveGroupSettings,
-    addEvent,          // <-- Fixed!
-    removeEvent,       // <-- Fixed!
-    addAchievement,    // <-- Fixed!
-    removeAchievement  // <-- Fixed!
+    addEvent,   
+    editEvent,      
+    removeEvent,       
+    addAchievement,    
+    removeAchievement  
   };
 }

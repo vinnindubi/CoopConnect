@@ -11,6 +11,24 @@ const isLoading = ref(true);
 const showSnackbar = ref(false);
 const snackbarText = ref('');
 
+// --- Post Viewing State ---
+const showPostDialog = ref(false);
+const selectedPost = ref<any>(null);
+const CHAR_LIMIT = 150; 
+
+// NEW: Smart truncation that doesn't chop words in half
+const formatSnippet = (text: string) => {
+  if (text.length <= CHAR_LIMIT) return text;
+  const chopped = text.substring(0, CHAR_LIMIT);
+  // Cut at the last space so we don't break a word
+  return chopped.substring(0, chopped.lastIndexOf(' ')) + '...';
+};
+
+const openPost = (post: any) => {
+  selectedPost.value = post;
+  showPostDialog.value = true;
+};
+
 // --- STATE: Start with empty data ---
 const club = ref<any>(null);
 const leaders = ref<any[]>([]);
@@ -151,7 +169,26 @@ onMounted(async () => {
                         </div>
                       </div>
                     </div>
-                    <p class="text-body-1 text-high-emphasis mb-4 leading-relaxed">{{ post.content }}</p>
+                    
+                    <template v-if="post.content.length > CHAR_LIMIT">
+                      <p class="text-body-1 text-high-emphasis mb-1 leading-relaxed">
+                        {{ formatSnippet(post.content) }}
+                      </p>
+                      <v-btn 
+                        variant="plain" 
+                        color="primary" 
+                        density="compact" 
+                        class="text-none px-0 mb-3 font-weight-black" 
+                        :ripple="false"
+                        @click="openPost(post)"
+                      >
+                        Show more
+                      </v-btn>
+                    </template>
+
+                    <template v-else>
+                      <p class="text-body-1 text-high-emphasis mb-4 leading-relaxed">{{ post.content }}</p>
+                    </template>
                     <div class="d-flex align-center border-t border-opacity-25 pt-3">
                       <v-btn :variant="post.isLiked ? 'tonal' : 'text'" :color="post.isLiked ? 'primary' : 'medium-emphasis'" class="text-none font-weight-bold rounded-pill px-4" @click="toggleLike(post)">
                         <v-icon start :icon="post.isLiked ? 'mdi-thumb-up' : 'mdi-thumb-up-outline'" size="20"></v-icon> {{ post.likes }} Likes
@@ -288,6 +325,49 @@ onMounted(async () => {
         </v-row>
       </v-container>
     </div>
+
+    <v-dialog v-model="showPostDialog" max-width="650" scrollable>
+      <v-card v-if="selectedPost" class="rounded-xl elevation-24">
+        
+        <v-card-title class="d-flex align-center pa-4 pa-sm-6 border-b border-opacity-25 bg-surface sticky-top">
+          <v-avatar size="48" class="mr-4 elevation-1">
+            <v-img :src="selectedPost.avatar" cover></v-img>
+          </v-avatar>
+          <div>
+            <div class="d-flex align-center">
+              <span class="text-subtitle-1 font-weight-black leading-tight mr-2">{{ selectedPost.author }}</span>
+              <v-chip size="x-small" color="success" variant="flat" class="font-weight-bold">{{ selectedPost.role }}</v-chip>
+            </div>
+            <div class="text-caption text-medium-emphasis mt-1">{{ selectedPost.timeAgo }}</div>
+          </div>
+          <v-spacer></v-spacer>
+          <v-btn icon="mdi-close" variant="tonal" color="medium-emphasis" density="comfortable" class="bg-surface-variant" @click="showPostDialog = false"></v-btn>
+        </v-card-title>
+
+        <v-card-text class="pa-4 pa-sm-6 text-body-1 text-high-emphasis bg-background">
+          <v-img v-if="selectedPost.postImage" :src="selectedPost.postImage" class="rounded-lg mb-6 elevation-2" max-height="400" cover></v-img>
+          
+          <div style="white-space: pre-wrap; line-height: 1.8; font-size: 1.05rem;">
+            {{ selectedPost.content }}
+          </div>
+        </v-card-text>
+
+        <v-card-actions class="pa-4 pa-sm-6 border-t border-opacity-25 bg-surface">
+          <v-btn 
+            :variant="selectedPost.isLiked ? 'tonal' : 'text'" 
+            :color="selectedPost.isLiked ? 'primary' : 'medium-emphasis'" 
+            class="text-none font-weight-bold rounded-pill px-6" 
+            size="large"
+            @click="toggleLike(selectedPost)"
+          >
+            <v-icon start :icon="selectedPost.isLiked ? 'mdi-thumb-up' : 'mdi-thumb-up-outline'" size="24"></v-icon> 
+            {{ selectedPost.likes }} {{ selectedPost.likes === 1 ? 'Like' : 'Likes' }}
+          </v-btn>
+          <v-spacer></v-spacer>
+        </v-card-actions>
+
+      </v-card>
+    </v-dialog>
 
     <v-snackbar v-model="showSnackbar" :timeout="3000" color="success" elevation="4" rounded="pill">
       <div class="d-flex align-center font-weight-bold">

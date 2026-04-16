@@ -32,7 +32,7 @@ export const updateGroupDetails = (groupId: number, data: object) => {
 };
 
 export const deleteGroupPost = (groupIapid: number, postId: number) => {
-  return apiClient.delete(`/groups/${groupId}/posts/${postId}`);
+  return apiClient.delete(`/groups/${groupIapid}/posts/${postId}`);
 };
 // Back to a standard, clean JSON POST request
 export const createGroupAchievement = (groupId: number, data: any) => {
@@ -47,10 +47,16 @@ export const updateGroupAchievement = (groupId: number, achievementId: number, d
 export const createGroupEvent = (groupId: number, data: any) => {
   return apiClient.post(`/groups/${groupId}/events`, data);
 };
-
+export const updateGroupEvent = (groupId: number, eventId: number, data: any) => {
+  return apiClient.put(`/groups/${groupId}/events/${eventId}`, data);
+};
 export const deleteGroupEvent = (groupId: number, eventId: number) => {
   return apiClient.delete(`/groups/${groupId}/events/${eventId}`);
 };
 export const deleteGroupAchievement = (groupId: number, achievementId: number) => {
   return apiClient.delete(`/groups/${groupId}/achievements/${achievementId}`);
+};
+//  global Events 
+export const getGlobalEvents = () => {
+  return apiClient.get('/events');
 };

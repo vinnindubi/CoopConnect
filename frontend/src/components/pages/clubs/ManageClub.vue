@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useGroups } from '@/composables/useGroups';
+import { EVENT_CATEGORIES } from '@/utils/constants';
 
 const route = useRoute();
 const router = useRouter();
@@ -16,6 +17,7 @@ const {
   kickMember, 
   saveGroupSettings,
   addEvent,
+  editEvent,
   removeEvent,
   addAchievement,
   removeAchievement
@@ -25,6 +27,23 @@ const isLoading = ref(true);
 const showSnackbar = ref(false);
 const snackbarText = ref('');
 const activeTab = ref('announcements');
+
+// --- Post Viewing State ---
+const showPostDialog = ref(false);
+const selectedPost = ref<any>(null);
+const CHAR_LIMIT = 150; 
+
+// Smart truncation that doesn't chop words in half
+const formatSnippet = (text: string) => {
+  if (text.length <= CHAR_LIMIT) return text;
+  const chopped = text.substring(0, CHAR_LIMIT);
+  return chopped.substring(0, chopped.lastIndexOf(' ')) + '...';
+};
+
+const openPost = (post: any) => {
+  selectedPost.value = post;
+  showPostDialog.value = true;
+};
 
 // --- Global State ---
 const club = ref<any>(null);
@@ -45,12 +64,79 @@ const plans = ref<any[]>([]);
 const successes = ref<any[]>([]);
 
 const isSubmittingEvent = ref(false);
+
+// UPDATED: Added new schema fields and defaulted to the first category in your constants
 const newEvent = ref({ 
   title: '', 
-  event_type: 'Major Event', 
+  event_type: EVENT_CATEGORIES[0], 
   event_date: '', 
+  location: '',
+  price: 0,
+  image: '',
   description: '' 
 });
+
+// State for the Edit Dialog
+const showEditEventDialog = ref(false);
+const isEditingEvent = ref(false);
+
+// UPDATED: Added new schema fields
+const editEventForm = ref({
+  id: null as number | null,
+  title: '',
+  event_date: '',
+  event_type: '',
+  location: '',
+  price: 0 as number | string,
+  image: '',
+  description: ''
+});
+
+// Open the dialog and pre-fill the form
+const openEditEventModal = (event: any) => {
+  // Safely format the date for the HTML datetime-local input
+  let formattedDate = '';
+  if (event.event_date) {
+    const dateObj = new Date(event.event_date);
+    // Adjusts for timezone to avoid date shifting, then slices to 'YYYY-MM-DDTHH:MM'
+    formattedDate = new Date(dateObj.getTime() - (dateObj.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+  }
+
+  editEventForm.value = { 
+    id: event.id,
+    title: event.title, 
+    event_date: formattedDate, 
+    event_type: event.event_type || event.type, 
+    location: event.location || '',
+    price: event.price || 0,
+    image: event.image || '',
+    description: event.description || event.desc 
+  };
+  showEditEventDialog.value = true;
+};
+
+// Handle the API call
+const submitEditEvent = async () => {
+  if (!editEventForm.value.title || !editEventForm.value.event_date) return;
+  isEditingEvent.value = true;
+  
+  try {
+    await editEvent(club.value.id, editEventForm.value.id as number, editEventForm.value);
+    
+    // Update the local UI list instantly
+    const index = club.value.events.findIndex((e: any) => e.id === editEventForm.value.id);
+    if (index !== -1) {
+      club.value.events[index] = { ...club.value.events[index], ...editEventForm.value };
+    }
+    
+    showToast('Plan updated successfully!');
+    showEditEventDialog.value = false;
+  } catch (error) {
+    showToast('Failed to update plan.');
+  } finally {
+    isEditingEvent.value = false;
+  }
+};
 
 const isSubmittingAchievement = ref(false);
 const newAchievement = ref({ 
@@ -146,7 +232,6 @@ const handleSaveSettings = async () => {
 
 // --- Methods: Milestones ---
 const handleAddEvent = async () => {
-  // 1. Make sure ALL required fields are filled out!
   if (!newEvent.value.title || !newEvent.value.event_date || !newEvent.value.description) {
     showToast('Please fill in the title, date, and description.');
     return;
@@ -156,10 +241,20 @@ const handleAddEvent = async () => {
   try {
     const res = await addEvent(club.value.id, newEvent.value);
     plans.value.push(res.event);
-    newEvent.value = { title: '', event_type: 'Major Event', event_date: '', description: '' };
+    
+    // UPDATED: Reset all fields, including the new ones
+    newEvent.value = { 
+      title: '', 
+      event_type: EVENT_CATEGORIES[0], 
+      event_date: '', 
+      location: '',
+      price: 0,
+      image: '',
+      description: '' 
+    };
+    
     showToast('Plan added successfully.');
   } catch (error: any) { 
-    // 2. Log the EXACT error Laravel sends back to your browser console
     console.error("Laravel Error:", error.response?.data || error.message);
     showToast(error.response?.data?.message || 'Failed to add plan.'); 
   } finally { 
@@ -179,7 +274,6 @@ const handleDeleteEvent = async (id: number) => {
 };
 
 const handleAddAchievement = async () => {
-  // 1. Make sure required fields are filled out!
   if (!newAchievement.value.title || !newAchievement.value.date_achieved || !newAchievement.value.description) {
     showToast('Please fill in the title, date, and description.');
     return;
@@ -192,7 +286,6 @@ const handleAddAchievement = async () => {
     newAchievement.value = { title: '', date_achieved: '', description: '', image_path: '' };
     showToast('Achievement added successfully.');
   } catch (error: any) { 
-    // 2. Log the EXACT error to the console
     console.error("Laravel Error:", error.response?.data || error.message);
     showToast(error.response?.data?.message || 'Failed to add achievement.'); 
   } finally { 
@@ -217,7 +310,6 @@ onMounted(async () => {
   try {
     const data = await fetchGroupById(clubId);
     
-    // SECURITY CHECK
     if (data.currentUserRole !== 'admin') {
       router.push(`/clubs/${clubId}`);
       return;
@@ -286,8 +378,25 @@ onMounted(async () => {
               <v-card v-for="post in announcements" :key="post.id" class="mb-4 rounded-lg bg-background border border-opacity-25" elevation="0">
                 <div class="pa-4 d-flex align-start justify-space-between">
                   <div>
-                    <div class="text-caption text-medium-emphasis mb-1">{{ post.timeAgo || 'Just now' }}</div>
-                    <p class="text-body-1 mb-0">{{ post.content }}</p>
+                                        <template v-if="post.content.length > CHAR_LIMIT">
+                      <p class="text-body-1 text-high-emphasis mb-1 leading-relaxed">
+                        {{ formatSnippet(post.content) }}
+                      </p>
+                      <v-btn 
+                        variant="plain" 
+                        color="primary" 
+                        density="compact" 
+                        class="text-none px-0 mb-3 font-weight-black" 
+                        :ripple="false"
+                        @click="openPost(post)"
+                      >
+                        Show more
+                      </v-btn>
+                    </template>
+
+                    <template v-else>
+                      <p class="text-body-1 text-high-emphasis mb-4 leading-relaxed">{{ post.content }}</p>
+                    </template>
                   </div>
                   <v-btn icon="mdi-delete-outline" variant="text" color="error" size="small" @click="handleDeletePost(post.id)"></v-btn>
                 </div>
@@ -357,10 +466,20 @@ onMounted(async () => {
               <v-card class="pa-4 mb-6 border border-opacity-25 bg-background" elevation="0" rounded="lg">
                 <v-row>
                   <v-col cols="12" sm="6"><v-text-field v-model="newEvent.title" label="Event Title" variant="outlined" density="comfortable" hide-details></v-text-field></v-col>
-                  <v-col cols="12" sm="6"><v-select v-model="newEvent.event_type" :items="['Major Event', 'Community Plan', 'Workshop', 'Competition']" label="Type" variant="outlined" density="comfortable" hide-details></v-select></v-col>
-                  <v-col cols="12" sm="4"><v-text-field v-model="newEvent.event_date" type="date" label="Date" variant="outlined" density="comfortable" hide-details></v-text-field></v-col>
-                  <v-col cols="12" sm="8"><v-text-field v-model="newEvent.description" label="Short Description" variant="outlined" density="comfortable" hide-details></v-text-field></v-col>
+                  
+                  <v-col cols="12" sm="6"><v-select v-model="newEvent.event_type" :items="EVENT_CATEGORIES" label="Category" variant="outlined" density="comfortable" hide-details></v-select></v-col>
+                  
+                  <v-col cols="12" sm="4"><v-text-field v-model="newEvent.event_date" type="datetime-local" label="Date & Time" variant="outlined" density="comfortable" hide-details></v-text-field></v-col>
+                  
+                  <v-col cols="12" sm="4"><v-text-field v-model="newEvent.location" label="Location (e.g. Main Hall)" variant="outlined" density="comfortable" hide-details prepend-inner-icon="mdi-map-marker-outline"></v-text-field></v-col>
+                  
+                  <v-col cols="12" sm="4"><v-text-field v-model="newEvent.price" type="number" min="0" label="Price (0 for Free)" variant="outlined" density="comfortable" hide-details prefix="KES"></v-text-field></v-col>
+                  
+                  <v-col cols="12"><v-text-field v-model="newEvent.image" label="Banner Image URL (Optional)" variant="outlined" density="comfortable" hide-details prepend-inner-icon="mdi-image-outline" placeholder="https://..."></v-text-field></v-col>
+                  
+                  <v-col cols="12"><v-textarea v-model="newEvent.description" label="Detailed Description" rows="2" auto-grow variant="outlined" density="comfortable" hide-details></v-textarea></v-col>
                 </v-row>
+                
                 <div class="d-flex justify-end mt-4">
                   <v-btn color="primary" class="text-none font-weight-bold" :loading="isSubmittingEvent" @click="handleAddEvent">Add Plan</v-btn>
                 </div>
@@ -370,9 +489,18 @@ onMounted(async () => {
                 <v-list-item v-for="plan in plans" :key="plan.id" class="border border-opacity-25 rounded-lg mb-2 bg-surface">
                   <template v-slot:prepend><v-icon icon="mdi-calendar-star" color="primary"></v-icon></template>
                   <v-list-item-title class="font-weight-bold">{{ plan.title }} <span class="text-caption text-medium-emphasis ml-2">({{ plan.event_date || plan.date }})</span></v-list-item-title>
-                  <v-list-item-subtitle>{{ plan.description || plan.desc }}</v-list-item-subtitle>
+                  
+                  <v-list-item-subtitle>
+                    <span v-if="plan.location" class="mr-2 font-weight-medium text-primary"><v-icon size="14" icon="mdi-map-marker"></v-icon> {{ plan.location }}</span>
+                    <span v-if="plan.price" class="mr-2 font-weight-medium text-success"><v-icon size="14" icon="mdi-ticket"></v-icon> KES {{ plan.price }}</span>
+                    {{ plan.description || plan.desc }}
+                  </v-list-item-subtitle>
+                  
                   <template v-slot:append>
-                    <v-btn icon="mdi-delete-outline" variant="text" color="error" size="small" @click="handleDeleteEvent(plan.id)"></v-btn>
+                    <div class="d-flex align-center">
+                      <v-btn icon="mdi-pencil-outline" variant="text" color="primary" size="small" class="mr-1" @click="openEditEventModal(plan)"></v-btn>
+                      <v-btn icon="mdi-delete-outline" variant="text" color="error" size="small" @click="handleDeleteEvent(plan.id)"></v-btn>
+                    </div>
                   </template>
                 </v-list-item>
               </v-list>
@@ -386,7 +514,9 @@ onMounted(async () => {
               <v-card class="pa-4 mb-6 border border-opacity-25 bg-background" elevation="0" rounded="lg">
                 <v-row>
                   <v-col cols="12" sm="8"><v-text-field v-model="newAchievement.title" label="Achievement Title" variant="outlined" density="comfortable" hide-details></v-text-field></v-col>
-                  <v-col cols="12" sm="4"><v-text-field v-model="newAchievement.date_achieved" label="Date (e.g., Aug 2025)" variant="outlined" density="comfortable" hide-details></v-text-field></v-col>
+                  
+                  <v-col cols="12" sm="4"><v-text-field v-model="newAchievement.date_achieved" type="date" label="Date Achieved" variant="outlined" density="comfortable" hide-details></v-text-field></v-col>
+                  
                   <v-col cols="12">
                     <v-text-field v-model="newAchievement.image_path" label="Image Link / URL (Optional)" placeholder="https://images.unsplash.com/..." variant="outlined" density="comfortable" hide-details prepend-inner-icon="mdi-link"></v-text-field>
                   </v-col>
@@ -426,7 +556,76 @@ onMounted(async () => {
         </v-card-text>
       </v-card>
     </div>
+    <v-dialog v-model="showPostDialog" max-width="650" scrollable>
+          <v-card v-if="selectedPost" class="rounded-xl elevation-24">
+            
+            <v-card-title class="d-flex align-center pa-4 pa-sm-6 border-b border-opacity-25 bg-surface sticky-top">
+              <v-avatar size="48" class="mr-4 elevation-1">
+                <v-img :src="selectedPost.avatar" cover></v-img>
+              </v-avatar>
+              <div>
+                <div class="d-flex align-center">
+                  <span class="text-subtitle-1 font-weight-black leading-tight mr-2">{{ selectedPost.author }}</span>
+                  <v-chip size="x-small" color="success" variant="flat" class="font-weight-bold">{{ selectedPost.role }}</v-chip>
+                </div>
+                <div class="text-caption text-medium-emphasis mt-1">{{ selectedPost.timeAgo }}</div>
+              </div>
+              <v-spacer></v-spacer>
+              <v-btn icon="mdi-close" variant="tonal" color="medium-emphasis" density="comfortable" class="bg-surface-variant" @click="showPostDialog = false"></v-btn>
+            </v-card-title>
 
+            <v-card-text class="pa-4 pa-sm-6 text-body-1 text-high-emphasis bg-background">
+              <v-img v-if="selectedPost.postImage" :src="selectedPost.postImage" class="rounded-lg mb-6 elevation-2" max-height="400" cover></v-img>
+              
+              <div style="white-space: pre-wrap; line-height: 1.8; font-size: 1.05rem;">
+                {{ selectedPost.content }}
+              </div>
+            </v-card-text>
+
+            <v-card-actions class="pa-4 pa-sm-6 border-t border-opacity-25 bg-surface">
+              <v-btn 
+                :variant="selectedPost.isLiked ? 'tonal' : 'text'" 
+                :color="selectedPost.isLiked ? 'primary' : 'medium-emphasis'" 
+                class="text-none font-weight-bold rounded-pill px-6" 
+                size="large"
+                @click="toggleLike(selectedPost)"
+              >
+                <v-icon start :icon="selectedPost.isLiked ? 'mdi-thumb-up' : 'mdi-thumb-up-outline'" size="24"></v-icon> 
+                {{ selectedPost.likes }} {{ selectedPost.likes === 1 ? 'Like' : 'Likes' }}
+              </v-btn>
+              <v-spacer></v-spacer>
+            </v-card-actions>
+
+          </v-card>
+    </v-dialog>
+    <v-dialog v-model="showEditEventDialog" max-width="600">
+      <v-card class="rounded-xl pa-2">
+        <v-card-title class="font-weight-black d-flex align-center pb-4 border-b border-opacity-25">
+          <v-icon icon="mdi-pencil-outline" color="primary" class="mr-3"></v-icon>
+          Edit Future Plan
+          <v-spacer></v-spacer>
+          <v-btn icon="mdi-close" variant="text" size="small" @click="showEditEventDialog = false"></v-btn>
+        </v-card-title>
+        
+        <v-card-text class="pt-6">
+          <v-row>
+            <v-col cols="12" sm="6"><v-text-field v-model="editEventForm.title" label="Plan Title" variant="outlined" density="comfortable" class="mb-2"></v-text-field></v-col>
+            <v-col cols="12" sm="6"><v-select v-model="editEventForm.event_type" :items="EVENT_CATEGORIES" label="Category" variant="outlined" density="comfortable" class="mb-2"></v-select></v-col>
+            <v-col cols="12" sm="4"><v-text-field v-model="editEventForm.event_date" label="Date & Time" type="datetime-local" variant="outlined" density="comfortable" class="mb-2"></v-text-field></v-col>
+            <v-col cols="12" sm="4"><v-text-field v-model="editEventForm.location" label="Location" variant="outlined" density="comfortable" class="mb-2"></v-text-field></v-col>
+            <v-col cols="12" sm="4"><v-text-field v-model="editEventForm.price" min="0" label="Price" type="number" prefix="KES" variant="outlined" density="comfortable" class="mb-2"></v-text-field></v-col>
+            <v-col cols="12"><v-text-field v-model="editEventForm.image" label="Banner Image URL" variant="outlined" density="comfortable" class="mb-2"></v-text-field></v-col>
+            <v-col cols="12"><v-textarea v-model="editEventForm.description" label="Description" variant="outlined" rows="3" auto-grow hide-details></v-textarea></v-col>
+          </v-row>
+        </v-card-text>
+        
+        <v-card-actions class="pa-4 pt-0">
+          <v-spacer></v-spacer>
+          <v-btn variant="text" color="medium-emphasis" class="text-none font-weight-bold" @click="showEditEventDialog = false">Cancel</v-btn>
+          <v-btn variant="flat" color="primary" class="text-none font-weight-bold px-6 rounded-lg" :loading="isEditingEvent" @click="submitEditEvent">Save Changes</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     <v-snackbar v-model="showSnackbar" :timeout="3000" color="success" elevation="4" rounded="pill">
       <div class="d-flex align-center font-weight-bold">
         <v-icon icon="mdi-check-circle" class="mr-3"></v-icon>
