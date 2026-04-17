@@ -3,6 +3,8 @@ import Profile from '@/components/pages/users/Profile.vue';
 import Dashboard from '@/components/pages/users/Dashboard.vue'
 import Login from '@/components/pages/users/Login.vue'
 import AdminDashboard from '@/components/pages/admin/AdminDashboard.vue';
+import CreateGlobalEvent from '@/components/pages/admin/CreateGlobalEvent.vue';
+import createEmergencyAnnouncement from '@/components/pages/admin/createEmergencyAnnouncement.vue';
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
 import AuthLayout from '@/layouts/AuthLayout.vue';
 import AdminLayout from '@/layouts/AdminLayout.vue';
@@ -24,6 +26,7 @@ import GroupRegistrationForm from '@/components/pages/forms/GroupRegistrationFor
 import ClubPublicProfile from '@/components/pages/clubs/ClubPublicProfile.vue';
 import ManageClub from '@/components/pages/clubs/ManageClub.vue';
 import Donate from '@/components/pages/users/Donate.vue';
+
 const routes=[{
     path:'/',
     component:DefaultLayout,
@@ -66,10 +69,9 @@ const routes=[{
         path:'/admin',
         component:AdminLayout,
         children: [
-        {
-          path: '',component: AdminDashboard
-        }
-      ]
+        { path: '',component: AdminDashboard},
+        { path: '/admin/events/create',name: 'AdminCreateEvent', component: CreateGlobalEvent},
+        { path: '/admin/announcements/create', name: 'AdminCreateAnnouncement',component: createEmergencyAnnouncement}]
     }
 ]
 

@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             
             // Relationship
-            $table->foreignId('group_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('group_id')->nullable()->constrained()->cascadeOnDelete();
             
             // 1. Core Event Details
             $table->string('title');

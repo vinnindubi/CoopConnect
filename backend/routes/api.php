@@ -5,6 +5,8 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\MpesaController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\AnnouncementController;
+use App\Http\Controllers\StudentDashboardController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -35,11 +37,16 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/admin/pending-sellers', [AuthController::class, 'getPendingSellers']);
     Route::post('/userEdit', [AuthController::class, 'updateUserData']);
     Route::post('/logout', [AuthController::class, 'logout']);
+
+    //Home feed 
+    Route::get('student/feed', [StudentDashboardController::class, 'getFeed']);
+    Route::get('student/events/upcoming', [StudentDashboardController::class, 'getUpcomingEvents']);
+    Route::get('student/marketplace/preview', [StudentDashboardController::class, 'getMarketplacePreview']);
     
     // --- Articles ---
     Route::get('/articles', [ArticleController::class, 'index']);
     Route::get('showArticle/{id}', [ArticleController::class, 'show']);
-    Route::post('/articles/store', [ArticleController::class, 'store']);
+    Route::post('/articles/store', [ArticleController::class, 'storeArticle']);
     Route::put('updateArticle/{id}', [ArticleController::class, 'update']);
     Route::delete('/articles/delete/{id}', [ArticleController::class, 'destroy']);
     
@@ -69,4 +76,14 @@ Route::middleware('auth:api')->group(function () {
     Route::delete('/groups/{id}/events/{eventId}', [GroupController::class, 'destroyEvent']);
     Route::post('/donate/stkpush', [MpesaController::class, 'stkPush']);
     Route::get('/donate/status/{checkoutRequestId}', [MpesaController::class, 'checkTransactionStatus']);
+    // Create a Global Campus Event
+    Route::post('/admin/events', [EventController::class, 'storeGlobalEvent']);
+    Route::delete('/admin/events/{id}', [EventController::class, 'destroyGlobalEvent']);
+    // Toggle Event Featured Status
+    Route::patch('/admin/events/{id}/feature', [EventController::class, 'toggleFeatureStatus']);
+    // need to update this eventually and input role based access whether admin , or member ...
+
+    Route::get('/announcements', [AnnouncementController::class, 'index']); // Public for students
+    Route::post('/admin/announcements', [AnnouncementController::class, 'store']); // Admin only
+    Route::patch('/admin/announcements/{id}/deactivate', [AnnouncementController::class, 'deactivate']); // Admin only
 });

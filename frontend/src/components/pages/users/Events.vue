@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { EVENT_CATEGORIES } from '@/utils/constants';
-import { getGlobalEvents } from '@/services/groupService'; // Adjust this path if your API call is elsewhere
+import { getGlobalEvents } from '@/services/groupService'; 
+import {useRouter} from 'vue-router'
 
 // 1. UI State
 const activeTab = ref('discover'); // 'discover' or 'my-schedule'
 const searchQuery = ref('');
 const selectedCategory = ref('All');
 const isLoading = ref(true);
+const router= useRouter();
 
 // Dynamically generate the category list from our Single Source of Truth
 const categories = computed(() => ['All', ...EVENT_CATEGORIES]);
@@ -55,10 +57,13 @@ const formatEvent = (event: any) => {
 };
 
 // 4. FRONTEND COMPUTED LOGIC
-// A. Banner Events (Take the 3 most immediate events for the carousel)
+// A. Banner Events (Only show events marked as 'featured' in the database)
 const featuredEvents = computed(() => {
   if (rawEvents.value.length === 0) return [];
-  return rawEvents.value.slice(0, 3).map(formatEvent);
+  // 1. Filter the array to ONLY include events where is_featured is true (or 1 in MySQL)
+  const featured = rawEvents.value.filter(event => event.is_featured === true || event.is_featured === 1);
+  // 2. Format them and limit to the top 3 so the carousel doesn't get overwhelmingly long
+  return featured.slice(0, 3).map(formatEvent);
 });
 
 // B. Grid Events
@@ -82,6 +87,14 @@ const gridEvents = computed(() => {
   return result;
 });
 
+// --- Event Dialog State ---
+const showEventDialog = ref(false);
+const selectedEvent = ref<any>(null);
+
+const openEventDetails = (event: any) => {
+  selectedEvent.value = event;
+  showEventDialog.value = true;
+};
 // 5. FETCH DATA ON LOAD
 onMounted(async () => {
   try {
@@ -129,8 +142,8 @@ onMounted(async () => {
               <div class="d-flex align-center gap-1 mr-1"><v-icon :icon="event.icon" size="20"></v-icon> {{ event.location }}</div>
             </div>
             
-            <v-btn color="primary" size="large" class="text-none font-weight-bold align-self-start rounded-lg px-8">
-              RSVP Now
+            <v-btn color="primary" size="large" class="text-none font-weight-bold align-self-start rounded-lg px-8" @click="openEventDetails(event)">
+              View Details
             </v-btn>
           </div>
         </v-carousel-item>
@@ -180,7 +193,8 @@ onMounted(async () => {
         </v-col>
 
         <v-col cols="12" sm="6" md="4" lg="3" v-for="event in gridEvents" :key="event.id">
-          <v-card class="rounded-xl elevation-2 border-opacity-50 h-100 d-flex flex-column" border hover>
+          
+          <v-card @click="openEventDetails(event)" class="rounded-xl elevation-2 border-opacity-50 h-100 d-flex flex-column cursor-pointer" border hover>
             
             <div class="position-relative">
               <v-img :src="event.image" height="180" cover class="bg-grey-lighten-3"></v-img>
@@ -218,8 +232,9 @@ onMounted(async () => {
                 <div class="text-caption font-weight-medium text-medium-emphasis text-truncate pe-2">
                   By {{ event.organizer }}
                 </div>
-                <v-btn color="primary" variant="flat" size="small" class="text-none font-weight-bold px-4 rounded-lg shrink-0">
-                  RSVP
+                
+                <v-btn color="primary" variant="flat" size="small" class="text-none font-weight-bold px-4 rounded-lg shrink-0" @click="openEventDetails(event)">
+                  View
                 </v-btn>
               </div>
               
@@ -243,6 +258,92 @@ onMounted(async () => {
     </div>
 
   </v-container>
+  <v-dialog v-model="showEventDialog" max-width="700" scrollable>
+      <v-card v-if="selectedEvent" class="rounded-xl elevation-24 bg-surface overflow-hidden">
+        
+        <div class="pa-4 pa-md-6 border-b border-opacity-25 bg-surface d-flex justify-space-between align-start gap-4">
+          <div>
+            <v-chip size="small" color="primary" variant="tonal" class="font-weight-bold text-uppercase mb-2">{{ selectedEvent.category }}</v-chip>
+            <h2 class="text-h5 font-weight-black leading-tight">{{ selectedEvent.title }}</h2>
+          </div>
+          <v-btn icon="mdi-close" variant="tonal" color="medium-emphasis" size="small" class="shrink-0" @click="showEventDialog = false"></v-btn>
+        </div>
+
+        <v-card-text class="pa-6 pa-md-8 text-body-1 text-high-emphasis bg-background">
+          
+          <v-img :src="selectedEvent.image" height="180" cover class="rounded-xl mb-6 elevation-2 bg-surface-variant border border-opacity-25"></v-img>
+
+          <div class="d-flex flex-wrap align-center justify-space-between mb-8 gap-4">
+            <div class="d-flex align-center gap-4 flex-wrap">
+              <div class="d-flex align-center gap-2">
+                <v-icon icon="mdi-calendar-blank" color="primary"></v-icon>
+                <span class="font-weight-bold">{{ selectedEvent.month }} {{ selectedEvent.day }}</span>
+              </div>
+              <v-divider vertical class="mx-2 hidden-sm-and-down" style="height: 20px;"></v-divider>
+              <div class="d-flex align-center gap-2">
+                <v-icon icon="mdi-clock-outline" color="primary"></v-icon>
+                <span class="font-weight-bold">{{ selectedEvent.time }}</span>
+              </div>
+              <v-divider vertical class="mx-2 hidden-sm-and-down" style="height: 20px;"></v-divider>
+              <div class="d-flex align-center gap-2">
+                <v-icon :icon="selectedEvent.icon" color="primary"></v-icon>
+                <span class="font-weight-bold">{{ selectedEvent.location }}</span>
+              </div>
+            </div>
+            
+            <v-chip size="large" color="primary" class="font-weight-black elevation-1">
+              {{ selectedEvent.displayPrice }}
+            </v-chip>
+          </div>
+
+          <v-card class="pa-6 rounded-xl border border-opacity-25 bg-surface elevation-0 mb-8">
+            <div class="text-overline font-weight-black text-primary mb-3 tracking-widest">About This Event</div>
+            <div style="white-space: pre-wrap; line-height: 1.8;" class="text-body-1">
+              {{ selectedEvent.description }}
+            </div>
+          </v-card>
+
+          <v-card v-if="selectedEvent.group_id" class="rounded-xl border border-opacity-25 bg-surface overflow-hidden" elevation="0">
+            <div class="pa-4 bg-surface-variant border-b border-opacity-25">
+              <div class="text-caption font-weight-black text-primary text-uppercase tracking-widest">Hosted By</div>
+            </div>
+            <div class="pa-5 d-flex flex-column flex-sm-row gap-4 align-sm-center">
+              <v-avatar size="72" class="elevation-2 border" color="white">
+                <v-img :src="selectedEvent.group?.image || 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&q=80&w=600'" cover></v-img>
+              </v-avatar>
+              <div class="flex-grow-1">
+                <h3 class="text-h6 font-weight-bold leading-tight mb-1">{{ selectedEvent.organizer }}</h3>
+                <p class="text-body-2 text-medium-emphasis mb-3 line-clamp-2">
+                  {{ selectedEvent.group?.mission || 'A student-led community committed to organizing amazing experiences on campus.' }}
+                </p>
+                <v-btn variant="outlined" color="primary" size="small" class="text-none font-weight-bold rounded-lg" @click="router.push(`/clubsAndSocieties/${selectedEvent.group_id}`)">
+                  View Full Club Profile
+                </v-btn>
+              </div>
+            </div>
+          </v-card>
+          
+          <div v-else class="d-flex align-center pa-5 bg-surface rounded-xl border border-opacity-25">
+            <v-avatar size="56" color="primary" variant="tonal" class="mr-4">
+              <v-icon icon="mdi-shield-crown-outline" size="24"></v-icon>
+            </v-avatar>
+            <div>
+              <div class="text-caption text-medium-emphasis font-weight-bold text-uppercase tracking-widest mb-1">Hosted by</div>
+              <div class="text-h6 font-weight-bold text-high-emphasis leading-none">{{ selectedEvent.organizer }}</div>
+            </div>
+          </div>
+
+        </v-card-text>
+
+        <v-card-actions class="pa-4 pa-sm-6 border-t border-opacity-25 bg-surface d-flex justify-space-between align-center">
+          <div class="text-caption text-medium-emphasis font-weight-medium">Don't miss out!</div>
+          <div class="d-flex gap-3">
+            <v-btn variant="text" color="medium-emphasis" class="text-none font-weight-bold px-4" @click="showEventDialog = false">Cancel</v-btn>
+            <v-btn color="primary" variant="flat" size="large" class="text-none font-weight-black px-8 rounded-lg">Confirm RSVP</v-btn>
+          </div>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 </template>
 
 <style scoped>

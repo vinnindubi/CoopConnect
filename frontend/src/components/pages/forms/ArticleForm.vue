@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import articleService from '@/services/articleService';
 
 // --- State ---
 const isSubmitting = ref(false);
@@ -11,25 +12,20 @@ const imagePreview = ref<string | null>(null);
 const articleForm = ref({
   id: null,
   title: '',
-  excerpt: '', // The short teaser text
-  content: '', // The main article body
-  tags: [] as string[],
-  coverImage: null as File[] | null,
+  excerpt: '',
+  content: '',
+  category: '',
+  imageLink: '', 
 });
-
 // --- Options ---
-const tagOptions = ['Campus Life', 'Study Tips', 'Housing', 'Career & Internships', 'Events', 'Food & Dining'];
-
+const categoryOptions = [
+  'Student Life', 
+  'Housing', 
+  'Academics', 
+  'Experiences', 
+  'Tips & Tricks'
+];
 // --- Methods ---
-const handleImageUpload = (fileArray: File[] | undefined) => {
-  if (fileArray && fileArray.length > 0) {
-    const file = fileArray[0];
-    imagePreview.value = URL.createObjectURL(file);
-  } else {
-    imagePreview.value = null;
-  }
-};
-
 const triggerSnackbar = (message: string) => {
   snackbarText.value = message;
   showSnackbar.value = true;
@@ -39,20 +35,32 @@ const handleSaveArticle = async () => {
   isSubmitting.value = true;
   
   try {
-    // TODO: Send FormData to Laravel backend
-    
-    setTimeout(() => {
-      triggerSnackbar('Article published successfully!');
-      isSubmitting.value = false;
-    }, 1000);
+    const payload = {
+      title: articleForm.value.title,
+      excerpt: articleForm.value.excerpt,
+      content: articleForm.value.content,
+      category: articleForm.value.category,
+      image: articleForm.value.imageLink, // 👇 Send the URL string directly
+    };
 
-  } catch (error) {
+    await articleService.createArticle(payload);
+    
+    triggerSnackbar('Article published successfully!');
+    
+    // Optional: Reset form
+    // articleForm.value = { id: null, title: '', excerpt: '', content: '', category: null, imageLink: '' };
+
+  } catch (error: any) {
     console.error("Failed to publish article:", error);
-    triggerSnackbar('Failed to publish. Please try again.');
+    if (error.response && error.response.status === 422) {
+      triggerSnackbar('Validation failed. Please check your inputs.');
+    } else {
+      triggerSnackbar('Failed to publish. Please try again.');
+    }
+  } finally {
     isSubmitting.value = false;
   }
 };
-
 const cancelEdit = () => {
   console.log("Article edit cancelled");
 };
@@ -72,33 +80,34 @@ const cancelEdit = () => {
       <v-form @submit.prevent="handleSaveArticle" class="pa-6 pa-md-8">
         
         <div class="mb-8">
-          <label class="text-caption font-weight-black text-uppercase text-medium-emphasis tracking-widest mb-3 d-block">Cover Photo</label>
+          <label class="text-caption font-weight-black text-uppercase text-medium-emphasis tracking-widest mb-3 d-block">Cover Photo Link</label>
           
-          <v-card 
-            variant="outlined" 
-            class="rounded-xl border-dashed border-opacity-50 bg-grey-lighten-5 overflow-hidden mb-3 d-flex align-center justify-center position-relative" 
-            height="250"
-          >
-            <v-img v-if="imagePreview" :src="imagePreview" cover class="w-100 h-100"></v-img>
-            
-            <div v-else class="text-center pa-6">
-              <v-avatar color="indigo-lighten-5" size="64" class="mb-3">
-                <v-icon icon="mdi-image-plus" size="32" color="indigo-darken-2"></v-icon>
-              </v-avatar>
-              <div class="text-subtitle-1 font-weight-bold text-grey-darken-3">Upload a Cover Photo</div>
-              <div class="text-caption text-medium-emphasis">16:9 ratio recommended (e.g., 1200x675px)</div>
-            </div>
+          <v-text-field
+            v-model="articleForm.imageLink"
+            placeholder="Paste an image URL (e.g., https://images.unsplash.com/...)"
+            variant="outlined"
+            prepend-inner-icon="mdi-link"
+            class="rounded-lg mb-2"
+            hide-details
+            clearable
+          ></v-text-field>
 
-            <v-file-input
-              v-model="articleForm.coverImage"
-              accept="image/png, image/jpeg, image/webp"
-              class="position-absolute w-100 h-100 opacity-0 cursor-pointer"
-              style="top: 0; left: 0; z-index: 10;"
-              prepend-icon=""
-              hide-details
-              @update:model-value="handleImageUpload"
-            ></v-file-input>
-          </v-card>
+          <v-expand-transition>
+            <div v-if="articleForm.imageLink" class="mt-4">
+              <v-img 
+                :src="articleForm.imageLink" 
+                height="250" 
+                cover 
+                class="rounded-xl border border-opacity-25 elevation-2 bg-grey-lighten-3"
+              >
+                <template v-slot:error>
+                  <div class="d-flex align-center justify-center fill-height bg-grey-lighten-3">
+                    <v-icon icon="mdi-image-broken-variant" color="grey-darken-1" size="48"></v-icon>
+                  </div>
+                </template>
+              </v-img>
+            </div>
+          </v-expand-transition>
         </div>
 
         <v-divider class="mb-8 border-opacity-25"></v-divider>
@@ -130,17 +139,15 @@ const cancelEdit = () => {
           </v-col>
 
           <v-col cols="12" class="py-0">
-            <label class="text-caption font-weight-bold mb-1 d-block text-grey-darken-3">Tags</label>
-            <v-combobox 
-              v-model="articleForm.tags" 
-              :items="tagOptions" 
-              placeholder="Select or type your own tags..."
-              multiple 
-              chips 
-              closable-chips
+            <label class="text-caption font-weight-bold mb-1 d-block text-grey-darken-3">Category</label>
+            <v-select 
+              v-model="articleForm.category" 
+              :items="categoryOptions" 
+              placeholder="Select a category..."
               variant="outlined" 
               class="rounded-lg mb-4"
-            ></v-combobox>
+              required
+            ></v-select>
           </v-col>
         </v-row>
 

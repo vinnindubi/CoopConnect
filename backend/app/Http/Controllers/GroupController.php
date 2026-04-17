@@ -348,7 +348,7 @@ public function toggleMembership(Request $request, $id)
    /**
      * Future Plans: Create a new Event
      */
-    public function storeEvent(Request $request, $id)
+ public function storeEvent(Request $request, $id)
     {
         $group = Group::findOrFail($id);
         
@@ -368,13 +368,14 @@ public function toggleMembership(Request $request, $id)
             'description' => 'nullable|string',
             'event_type' => ['required', 'string', Rule::in($allowedCategories)],
             
-            // --- NEW FIELDS ADDED HERE ---
             'location' => 'nullable|string|max:255',
-            // Ensure price is a number and not negative
             'price' => 'nullable|numeric|min:0', 
-            // Accepts a string (URL or path)
             'image' => 'nullable|string', 
         ]);
+
+        // --- NEW LOGIC HERE ---
+        // Automatically assign the group's name to the organizer field
+        $validated['organizer'] = $group->name;
 
         // Create the event linked directly to this group
         $event = $group->events()->create($validated);

@@ -13,10 +13,20 @@ return new class extends Migration
     {
         Schema::create('articles', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete()->cascadeOnUpdate();
+            // The author of the article
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete(); 
             $table->string('title');
-            $table->string('description');
-            $table->string('author');
+            $table->text('excerpt'); 
+            $table->longText('content'); 
+            $table->string('image')->nullable(); 
+            $table->string('read_time')->default('5 min read'); 
+            $table->enum('category', [
+                'Student Life', 
+                'Housing', 
+                'Academics', 
+                'Experiences', 
+                'Tips & Tricks'
+            ])->default('Student Life');
             $table->timestamps();
         });
     }

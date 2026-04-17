@@ -1,3 +1,3 @@
 export const EVENT_CATEGORIES = [
-  'All', 'Academic', 'Social', 'Sports', 'Career'
+  'Academic', 'Social', 'Sports', 'Career'
 ];
