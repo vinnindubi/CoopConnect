@@ -20,12 +20,12 @@ import AdminUsers from '@/components/pages/admin/AdminUsers.vue';
 import ProductForm from '@/components/pages/forms/ProductForm.vue';
 import ArticleForm from '@/components/pages/forms/ArticleForm.vue';
 import SellerApplicationForm from '@/components/pages/forms/SellerApplicationForm.vue';
-import { components } from 'vuetify/dist/vuetify.js';
 import ClubsAndSocieties from '@/components/pages/users/ClubsAndSocieties.vue';
 import GroupRegistrationForm from '@/components/pages/forms/GroupRegistrationForm.vue';
 import ClubPublicProfile from '@/components/pages/clubs/ClubPublicProfile.vue';
 import ManageClub from '@/components/pages/clubs/ManageClub.vue';
 import Donate from '@/components/pages/users/Donate.vue';
+import SellerProfile from '@/components/pages/users/SellerProfile.vue';
 
 const routes=[{
     path:'/',
@@ -33,7 +33,7 @@ const routes=[{
     children:[ 
         {path:'home',name:'Home',component:Dashboard},
         {path:'events',name:'Events',component:Events},
-        {path:'articles',name:'Articles',component: Articles}, //typescript enforces need for component. ensure you put it.
+        {path:'articles',name:'Articles',component: Articles},
         {path:'forums',name:'Forums',component:Forum},
         {path:'marketplace',name:'Marketplace',component:MarketPlace},
         {path:'feedback',name:'Feedback',component:Feedback},
@@ -47,7 +47,8 @@ const routes=[{
         {path:'registerClubOrSociety', name :'registerClubOrSociety',component:GroupRegistrationForm},
         {path: '/clubsAndSocieties/:id',name: 'ClubProfile',component: ClubPublicProfile },
         {path:'/clubs/:id/manage',name:'ManageClub',component:ManageClub},
-        {path:'/donate',name:'Donations',component:Donate}
+        {path:'/donate',name:'Donations',component:Donate},
+        { path: '/seller/:id', component: SellerProfile }
     ]
     },
     {

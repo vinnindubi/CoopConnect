@@ -126,6 +126,7 @@ const getUser = async () => {
        profile.value.course = userData.course;
        profile.value.year = userData.year;
        profile.value.bio = userData.bio;
+       profile.value.avatar= userData.avatar;
        profile.value.coverPhoto = userData.cover_photo;
        let rawCategories = userData.store_categories || [];
 

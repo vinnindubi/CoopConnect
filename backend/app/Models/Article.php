@@ -23,4 +23,23 @@ class Article extends Model
         // Links to the user who wrote it
         return $this->belongsTo(User::class, 'user_id'); 
     }
+    public function feedPost()
+    {
+        return $this->morphOne(FeedPost::class, 'feedable');
+    }
+    //  Add the Auto-Create logic
+    protected static function booted()
+    {
+        static::created(function ($article) {
+            // Automatically put it in the feed when created
+            $article->feedPost()->create(); 
+        });
+
+        static::deleted(function ($article) {
+            // Automatically remove it from the feed if the article is deleted
+            if ($article->feedPost) {
+                $article->feedPost()->delete();
+            }
+        });
+    }
 }

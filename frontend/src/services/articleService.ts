@@ -1,27 +1,37 @@
 import { apiClient } from "./myapi";
+
 export default {
   /**
    * Create a new article
+   * Matches Route::post('/articles/store')
    */
   createArticle(articleData: any) {
-    // We point this to the Admin route we created earlier. 
-    // If students are allowed to post, ensure you adjust the route prefix accordingly in Laravel!
     return apiClient.post('/articles/store', articleData);
   },
 
   /**
    * Fetch all articles (for the feed)
+   * Matches Route::get('/articles')
    */
   getArticles(category = 'All', search = '') {
-    return apiClient.get('/student/articles', {
+    return apiClient.get('/articles', {
       params: { category, search }
     });
   },
 
   /**
    * Fetch a single article by ID
+   * Matches Route::get('showArticle/{id}')
    */
   getArticle(id: number | string) {
-    return apiClient.get(`/student/articles/${id}`);
+    return apiClient.get(`/showArticle/${id}`);
+  },
+
+  /**
+   * Fetch all articles for a specific user profile
+   * Matches Route::get('/users/{id}/articles')
+   */
+  getUserArticles(userId: number | string) {
+    return apiClient.get(`/users/${userId}`);
   }
 };

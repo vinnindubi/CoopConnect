@@ -1,169 +1,40 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { onMounted } from 'vue';
+// Make sure this path matches where you saved the file!
+import { useMarketPlaceGroup } from '@/composables/useMarketPlaceGroup'; 
 
-// 1. UI State
-const activeTab = ref('marketplace'); // 'marketplace' or 'adverts'
-const searchQuery = ref('');
+// Destructure exactly what your template needs from the logic group
+const {
+  activeTab,
+  searchQuery,
+  selectedProductCat,
+  productCategories,
+  selectedAdvertCat,
+  advertCategories,
+  filteredProducts,
+  filteredAdverts,
+  fetchMarketplaceData
+} = useMarketPlaceGroup();
 
-// 2. Marketplace State (Verified Sellers)
-const selectedProductCat = ref('All');
-const productCategories = ref(['All', 'Electronics', 'Fashion', 'Academic', 'Services']);
-
-const products = ref([
-  {
-    id: 1,
-    title: 'HP EliteBook 840 G5 (Core i5)',
-    price: 'KES 25,000',
-    category: 'Electronics',
-    seller: 'TechHub Campus',
-    isVerified: true, 
-    time: '2h ago',
-    image: 'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?auto=format&fit=crop&q=80&w=400'
-  },
-  {
-    id: 2,
-    title: 'Knotless Braids & Dreadlocks',
-    price: 'From KES 800',
-    category: 'Services',
-    seller: 'Glamour Cuts',
-    isVerified: true,
-    time: '1d ago',
-    image: 'https://images.unsplash.com/photo-1605497788044-5a32c7078486?auto=format&fit=crop&q=80&w=400'
-  },
-  {
-    id: 3,
-    title: 'Casio fx-991EX Scientific Calculator',
-    price: 'KES 1,500',
-    category: 'Academic',
-    seller: 'Engineering Seniors',
-    isVerified: true,
-    time: '3h ago',
-    image: 'https://images.unsplash.com/photo-1632571401005-458e9d244591?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8Q2FzaW8lMjBmeC05OTFFWCUyMFNjaWVudGlmaWMlMjBDYWxjdWxhdG9yfGVufDB8fDB8fHww'
-  },
-  {
-    id: 4,
-    title: 'Vintage Thrifted Varsity Jackets',
-    price: 'KES 1,200',
-    category: 'Fashion',
-    seller: 'Drip Thrift Store',
-    isVerified: true,
-    time: '5h ago',
-    image: 'https://images.unsplash.com/photo-1584966393803-c8c7257794cd?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MjR8fFZpbnRhZ2UlMjBUaHJpZnRlZCUyMFZhcnNpdHklMjBKYWNrZXRzfGVufDB8fDB8fHww'
-  },
-  {
-    id: 5,
-    title: 'Sony Noise Cancelling Headphones',
-    price: 'KES 3,500',
-    category: 'Electronics',
-    seller: 'Gadget Gadgets',
-    isVerified: true, // An unverified student seller
-    time: 'Just now',
-    image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=400'
-  },
-  {
-    id: 6,
-    title: 'Laptop Repair & Windows Installation',
-    price: 'From KES 500',
-    category: 'Services',
-    seller: 'Campus IT Guru',
-    isVerified: true,
-    time: '1d ago',
-    image: 'https://images.unsplash.com/photo-1709102884400-b50ca1a12bc3?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fHJlcGFpciUyMGxhcHRvcHN8ZW58MHx8MHx8fDA%3D'
-  },
-  {
-    id: 7,
-    title: 'Nike Air Force 1 (Size 40-44)',
-    price: 'KES 2,500',
-    category: 'Fashion',
-    seller: 'Kicks Ke',
-    isVerified: true,
-    time: '6h ago',
-    image: 'https://images.unsplash.com/photo-1712167631738-4dab9e53c853?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTh8fE5pa2UlMjBBaXIlMjBGb3JjZSUyMDF8ZW58MHx8MHx8fDA%3D'
-  },
-  {
-    id: 8,
-    title: 'Business Law & Economics Textbooks',
-    price: 'KES 1,200',
-    category: 'Academic',
-    seller: 'Jennifer Wambo',
-    isVerified: true,
-    time: '2d ago',
-    image: 'https://images.unsplash.com/photo-1588580000645-4562a6d2c839?auto=format&fit=crop&q=80&w=400'
-  },
-  {
-    id: 9,
-    title: 'Original iPhone 20W Fast Charger',
-    price: 'KES 1,800',
-    category: 'Electronics',
-    seller: 'TechHub Campus',
-    isVerified: true,
-    time: '4h ago',
-    image: 'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&q=80&w=400'
-  },
-  {
-    id: 10,
-    title: 'Graduation & Birthday Photoshoots',
-    price: 'KES 3,000 / session',
-    category: 'Services',
-    seller: 'Lens Crafters',
-    isVerified: true,
-    time: '3d ago',
-    image: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&q=80&w=400'
+const getAdvertStyling = (category: string) => {
+  switch (category) {
+    case 'Housing':
+      return { icon: 'mdi-home-account', color: 'orange-darken-2' };
+    case 'Collaborations':
+      return { icon: 'mdi-code-braces', color: 'blue-darken-2' };
+    case 'Jobs':
+      return { icon: 'mdi-briefcase-outline', color: 'green-darken-2' };
+    default:
+      return { icon: 'mdi-bulletin-board', color: 'grey-darken-2' };
   }
-]);
+};
 
-// 3. Adverts State (Peer-to-Peer Requests & Opportunities)
-const selectedAdvertCat = ref('All');
-const advertCategories = ref(['All', 'Housing', 'Collaborations', 'Jobs', 'General']);
-
-const adverts = ref([
-  {
-    id: 1,
-    title: 'Looking for a Female Roommate',
-    category: 'Housing',
-    description: 'Seeking a neat roommate to share a 1-bedroom apartment in Hardy Karen. Rent is 6k per month. WiFi included.',
-    author: 'Sarah M.',
-    time: '5h ago',
-    icon: 'mdi-home-account',
-    iconColor: 'orange-darken-2'
-  },
-  {
-    id: 2,
-    title: 'Frontend Developer Needed for Startup',
-    category: 'Collaborations',
-    description: 'We are building a fintech app for students and need a Vue.js developer to join our team. Equity compensation.',
-    author: 'CoopInnovate Team',
-    time: '1d ago',
-    icon: 'mdi-code-braces',
-    iconColor: 'blue-darken-2'
-  },
-  {
-    id: 3,
-    title: 'Part-time Library Assistant',
-    category: 'Jobs',
-    description: 'The main library is looking for 3 students to work evening shifts organizing shelves. Apply at the admin block.',
-    author: 'Library Admin',
-    time: '2d ago',
-    icon: 'mdi-briefcase-outline',
-    iconColor: 'green-darken-2'
-  }
-]);
-
-// 4. Computed Filters
-const filteredProducts = computed(() => {
-  let result = products.value;
-  if (selectedProductCat.value !== 'All') result = result.filter(p => p.category === selectedProductCat.value);
-  if (searchQuery.value) result = result.filter(p => p.title.toLowerCase().includes(searchQuery.value.toLowerCase()));
-  return result;
-});
-
-const filteredAdverts = computed(() => {
-  let result = adverts.value;
-  if (selectedAdvertCat.value !== 'All') result = result.filter(a => a.category === selectedAdvertCat.value);
-  if (searchQuery.value) result = result.filter(a => a.title.toLowerCase().includes(searchQuery.value.toLowerCase()));
-  return result;
+// Fetch the data from Laravel as soon as the page loads
+onMounted(() => {
+  fetchMarketplaceData();
 });
 </script>
+
 <template>
   <v-container fluid class="pa-6" style="max-width: 1200px;">
     
@@ -213,13 +84,46 @@ const filteredAdverts = computed(() => {
             <v-img :src="item.image" height="160" cover class="bg-grey-lighten-3"></v-img>
             
             <div class="pa-3 d-flex flex-column flex-grow-1">
-              <div class="text-subtitle-1 font-weight-black text-primary line-clamp-1">{{ item.price }}</div>
+              <div class="text-subtitle-1 font-weight-black text-primary line-clamp-1 mb-1">{{ item.price }}</div>
+              
+              <template v-if="item.category !== 'Services' && item.quantity">
+                <v-chip 
+                  v-if="Number(item.quantity) > 1" 
+                  size="x-small" 
+                  color="orange-darken-2" 
+                  variant="flat" 
+                  class="font-weight-bold mb-2 align-self-start"
+                >
+                  {{ item.quantity }} in stock
+                </v-chip>
+                
+                <v-chip 
+                  v-else-if="Number(item.quantity) === 1" 
+                  size="x-small" 
+                  color="red-darken-1" 
+                  variant="flat" 
+                  class="font-weight-bold mb-2 align-self-start"
+                >
+                  Only 1 left!
+                </v-chip>
+              </template>
               <div class="text-body-2 font-weight-bold mb-2 line-clamp-2" style="line-height: 1.2;">{{ item.title }}</div>
               
               <div class="mt-auto pt-2 border-top">
                 <div class="d-flex align-center gap-1">
                   <v-icon v-if="item.isVerified" icon="mdi-check-decagram" color="blue" size="14"></v-icon>
-                  <span class="text-caption font-weight-medium text-truncate">{{ item.seller }}</span>
+                  <v-hover v-slot="{ isHovering, props }">
+                    <router-link 
+                      :to="`/seller/${item.seller_id}`" 
+                      class="text-primary"
+                      :class="isHovering ? 'text-decoration-underline' : 'text-decoration-none'"
+                      v-bind="props"
+                    >
+                      <span class="text-caption font-weight-medium text-truncate">
+                        {{ item.seller }}
+                      </span>
+                    </router-link>
+                  </v-hover>
                 </div>
                 <div class="text-caption text-medium-emphasis mt-1">{{ item.time }}</div>
               </div>
@@ -243,12 +147,21 @@ const filteredAdverts = computed(() => {
             <div class="d-flex gap-4">
               
               <div class="d-flex align-center justify-center rounded-lg bg-grey-lighten-4 shrink-0" style="width: 56px; height: 56px;">
-                <v-icon :icon="advert.icon" :color="advert.iconColor" size="28"></v-icon>
+                <v-icon 
+                  :icon="getAdvertStyling(advert.category).icon" 
+                  :color="getAdvertStyling(advert.category).color" 
+                  size="28">
+                </v-icon>
               </div>
 
               <div class="flex-grow-1">
                 <div class="d-flex justify-space-between align-start mb-1">
-                  <v-chip size="x-small" variant="tonal" :color="advert.iconColor" class="font-weight-bold text-uppercase mb-2">
+                  <v-chip 
+                    size="x-small" 
+                    variant="tonal" 
+                    :color="getAdvertStyling(advert.category).color" 
+                    class="font-weight-bold text-uppercase mb-2"
+                  >
                     {{ advert.category }}
                   </v-chip>
                   <span class="text-caption text-medium-emphasis">{{ advert.time }}</span>
@@ -270,7 +183,8 @@ const filteredAdverts = computed(() => {
         </v-col>
       </v-row>
     </div>
-    <div v-if="activeTab === 'inquiry'">
+    
+    <div v-if="activeTab === 'inquery'">
         <v-card>
             
         </v-card>

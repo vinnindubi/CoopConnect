@@ -8,6 +8,9 @@ export const getActiveAnnouncements = () => {
 export const getStudentFeed = () => {
   return apiClient.get('/student/feed');
 };
+export const getStudentUpcoming = () => {
+  return apiClient.get('/home/upcoming');
+};
 
 // Fetch upcoming events and club activities
 export const getUpcomingEvents = () => {

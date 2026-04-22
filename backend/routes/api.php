@@ -7,6 +7,7 @@ use App\Http\Controllers\MpesaController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\StudentDashboardController;
+use App\Http\Controllers\MarketplaceController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -40,6 +41,7 @@ Route::middleware('auth:api')->group(function () {
 
     //Home feed 
     Route::get('student/feed', [StudentDashboardController::class, 'getFeed']);
+    Route::get('home/upcoming', [StudentDashboardController::class, 'getHomeData']);
     Route::get('student/events/upcoming', [StudentDashboardController::class, 'getUpcomingEvents']);
     Route::get('student/marketplace/preview', [StudentDashboardController::class, 'getMarketplacePreview']);
     
@@ -49,6 +51,8 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/articles/store', [ArticleController::class, 'storeArticle']);
     Route::put('updateArticle/{id}', [ArticleController::class, 'update']);
     Route::delete('/articles/delete/{id}', [ArticleController::class, 'destroy']);
+    // Fetch articles for a specific user
+    Route::get('/users/{id}/articles', [ArticleController::class, 'userArticles']);
     
     // --- Groups Base CRUD ---
     // Handles store(), update(), and destroy() for the groups.
@@ -86,4 +90,9 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/announcements', [AnnouncementController::class, 'index']); // Public for students
     Route::post('/admin/announcements', [AnnouncementController::class, 'store']); // Admin only
     Route::patch('/admin/announcements/{id}/deactivate', [AnnouncementController::class, 'deactivate']); // Admin only
+
+
+    //marketplace
+    Route::get('/marketplace', [MarketplaceController::class, 'index']);
+    Route::get('/sellers/{id}', [MarketplaceController::class, 'show']);
 });

@@ -1,64 +1,70 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import articleService from '@/services/articleService'; // Adjust path if necessary
 
-// 1. UI State
+// 1. UI & Loading State
+const isLoading = ref(true);
+const fetchError = ref(false);
 const searchQuery = ref('');
 const selectedCategory = ref('All');
-const categories = ref(['All', 'Student Life', 'Housing', 'Academics', 'Experiences', 'Tips & Tricks']);
+const categories = ref(['All']); // Will be populated dynamically by the backend
 
-// 2. Mock Article Data (Removed isFeatured flags)
-const rawArticles = ref([
-  {
-    id: 1,
-    title: 'Surviving Your First Year: A Senior’s Ultimate Cheat Sheet',
-    excerpt: 'Forget what the brochure told you. Here is the actual truth about making friends, finding the best food, and surviving finals week without losing your mind.',
-    category: 'Tips & Tricks',
-    authorName: 'Alex Johnson',
-    authorRole: '4th Year, Computer Science',
-    authorAvatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=150',
-    date: 'Oct 12',
-    readTime: '5 min read',
-    image: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&q=80&w=1200'
-  },
-  {
-    id: 2,
-    title: 'The Best Off-Campus Housing Spots You Didn’t Know About',
-    excerpt: 'Tired of dorm life? We scoured the areas around campus to find the hidden gems that won’t break your HELB loan.',
-    category: 'Housing',
-    authorName: 'Sarah Kimani',
-    authorRole: '3rd Year, Business',
-    authorAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150',
-    date: 'Oct 15',
-    readTime: '4 min read',
-    image: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&q=80&w=600'
-  },
-  {
-    id: 3,
-    title: 'My 48 Hours Awake at the CUK Tech Hackathon',
-    excerpt: 'Lots of coffee, zero sleep, and one broken keyboard later. Here is what it’s actually like to compete in the annual tech showdown.',
-    category: 'Experiences',
-    authorName: 'David Ochieng',
-    authorRole: '2nd Year, IT',
-    authorAvatar: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?auto=format&fit=crop&q=80&w=150',
-    date: 'Oct 18',
-    readTime: '6 min read',
-    image: 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&q=80&w=600'
-  },
-  {
-    id: 4,
-    title: 'Mastering the Art of Meal Prepping on a Student Budget',
-    excerpt: 'Tired of eating noodles every night? Here is a realistic, step-by-step guide to cooking an entire week of healthy meals for under KES 1,500.',
-    category: 'Student Life',
-    authorName: 'Brian Omondi',
-    authorRole: '3rd Year, Economics',
-    authorAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=150',
-    date: 'Oct 22',
-    readTime: '4 min read',
-    image: 'https://plus.unsplash.com/premium_photo-1680291971376-ccc54aacb22b?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8Y29va2luZ3xlbnwwfHwwfHx8MA%3D%3D'
+// 2. Main Feed State (No more mock data!)
+const rawArticles = ref<any[]>([]);
+
+// 3. Reader Dialog State (For viewing a single article)
+const isReadingDialog = ref(false);
+const isLoadingArticle = ref(false);
+const activeArticle = ref<any>(null);
+
+// --- Methods ---
+
+// Fetch all articles and categories for the grid
+const fetchArticlesData = async () => {
+  isLoading.value = true;
+  fetchError.value = false;
+  
+  try {
+    const response = await articleService.getArticles();
+    
+    // Safely extract the data
+    const payload = response.data || response;
+    
+    categories.value = payload.categories || ['All'];
+    rawArticles.value = payload.articles || [];
+    
+  } catch (error) {
+    console.error("Failed to load articles feed:", error);
+    fetchError.value = true;
+  } finally {
+    isLoading.value = false;
   }
-]);
+};
 
-// 3. Computed Logic for Filtering (Simplified)
+// Fetch full details when a student clicks a specific card
+const readArticle = async (id: number) => {
+  isReadingDialog.value = true; // Open the popup instantly
+  isLoadingArticle.value = true; // Show a spinner
+  activeArticle.value = null; // Clear out the previous article
+
+  try {
+    const response = await articleService.getArticle(id);
+    activeArticle.value = response.data || response;
+  } catch (error) {
+    console.error("Failed to load full article details:", error);
+  } finally {
+    isLoadingArticle.value = false;
+  }
+};
+
+// Fire the fetch function the second the page loads!
+onMounted(() => {
+  fetchArticlesData();
+});
+
+// --- Computed Properties ---
+
+// Filter logic (Now fully null-safe)
 const gridArticles = computed(() => {
   let result = rawArticles.value;
 
@@ -70,7 +76,11 @@ const gridArticles = computed(() => {
   // Apply Search Filter
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase();
-    result = result.filter(a => a.title.toLowerCase().includes(query) || a.excerpt.toLowerCase().includes(query));
+    result = result.filter(a => 
+      // Added '?.' (optional chaining) so it won't crash if a title or excerpt is missing
+      a.title?.toLowerCase().includes(query) || 
+      a.excerpt?.toLowerCase().includes(query)
+    );
   }
 
   return result;

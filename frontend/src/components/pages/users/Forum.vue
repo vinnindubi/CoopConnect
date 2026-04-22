@@ -83,6 +83,53 @@ const upvoteThread = (id: number) => {
   if (thread) thread.upvotes++;
   // TODO: Send upvote to Laravel backend
 };
+// --- Form State for New Topic ---
+const formRef = ref();
+const isSubmitting = ref(false);
+const newTopic = ref({
+  title: '',
+  category: '',
+  excerpt: ''
+});
+
+// We don't want users to select "All" as a category when posting
+const postableCategories = computed(() => categories.filter(c => c !== 'All'));
+
+// --- Form Validation Rules ---
+const rules = {
+  required: (v: string) => !!v || 'This field is required',
+  minLength: (v: string) => (v && v.length >= 10) || 'Must be at least 10 characters'
+};
+
+const submitTopic = async () => {
+  const { valid } = await formRef.value.validate();
+  
+  if (valid) {
+    isSubmitting.value = true;
+    
+    // TODO: Replace this timeout with your actual Laravel API call!
+    // Example: await apiClient.post('/threads', newTopic.value);
+    setTimeout(() => {
+      // Mocking a successful post by adding it to the top of our local array
+      threads.value.unshift({
+        id: Date.now(),
+        title: newTopic.value.title,
+        excerpt: newTopic.value.excerpt,
+        author: { name: 'You', avatar: '', isVerified: false }, // Replace with logged-in user
+        category: newTopic.value.category,
+        upvotes: 0,
+        comments: 0,
+        timeAgo: 'Just now',
+        hot: false
+      });
+
+      // Reset and close
+      isSubmitting.value = false;
+      showNewPostDialog.value = false;
+      formRef.value.reset();
+    }, 1000);
+  }
+};
 </script>
 
 <template>
@@ -207,6 +254,7 @@ const upvoteThread = (id: number) => {
               <h3 class="text-h6 font-weight-bold mb-2">Have something to say?</h3>
               <p class="text-body-2 opacity-80 mb-4">Start a discussion, ask a question, or share an opportunity with the campus.</p>
               <v-btn 
+                @click="showNewPostDialog = true" 
                 color="surface" 
                 variant="flat" 
                 block 
@@ -263,6 +311,72 @@ const upvoteThread = (id: number) => {
 
     </v-container>
   </v-container>
+  <v-dialog v-model="showNewPostDialog" max-width="600" persistent>
+      <v-card class="rounded-xl border-opacity-25 bg-surface">
+        <v-card-title class="d-flex align-center justify-space-between pa-6 border-b border-opacity-25">
+          <span class="text-h6 font-weight-black">Start a New Discussion</span>
+          <v-btn icon="mdi-close" variant="text" density="comfortable" @click="showNewPostDialog = false"></v-btn>
+        </v-card-title>
+
+        <v-card-text class="pa-6">
+          <v-form ref="formRef" @submit.prevent="submitTopic">
+            
+            <div class="text-subtitle-2 font-weight-bold mb-2">Topic Title</div>
+            <v-text-field
+              v-model="newTopic.title"
+              :rules="[rules.required]"
+              placeholder="e.g., Anyone taking COMP 302 next semester?"
+              variant="outlined"
+              density="comfortable"
+              class="mb-4"
+            ></v-text-field>
+
+            <div class="text-subtitle-2 font-weight-bold mb-2">Category</div>
+            <v-select
+              v-model="newTopic.category"
+              :items="postableCategories"
+              :rules="[rules.required]"
+              placeholder="Select a category"
+              variant="outlined"
+              density="comfortable"
+              class="mb-4"
+            ></v-select>
+
+            <div class="text-subtitle-2 font-weight-bold mb-2">Details</div>
+            <v-textarea
+              v-model="newTopic.excerpt"
+              :rules="[rules.required, rules.minLength]"
+              placeholder="Share more details, ask your question, or explain your thoughts..."
+              variant="outlined"
+              auto-grow
+              rows="4"
+              counter
+              class="mb-2"
+            ></v-textarea>
+          </v-form>
+        </v-card-text>
+
+        <v-card-actions class="pa-6 pt-0 d-flex justify-end gap-3">
+          <v-btn 
+            variant="text" 
+            class="text-none font-weight-bold rounded-lg" 
+            @click="showNewPostDialog = false"
+            :disabled="isSubmitting"
+          >
+            Cancel
+          </v-btn>
+          <v-btn 
+            color="primary" 
+            variant="flat" 
+            class="text-none font-weight-bold px-6 rounded-lg" 
+            @click="submitTopic"
+            :loading="isSubmitting"
+          >
+            Post Topic
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 </template>
 
 <style scoped>

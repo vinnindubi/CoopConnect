@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Article;
 use App\Models\User;
 use Carbon\Carbon;
+use Str;
 class ArticleController extends Controller
 {
     public function index(Request $request)
@@ -39,9 +40,9 @@ class ArticleController extends Controller
                 'excerpt' => $article->excerpt,
                 'category' => $article->category, // Directly accesses the ENUM string
                 
-                'authorName' => $article->author->name ?? 'Unknown Student',
+                'authorName' => $article->author->fullname ?? 'Unknown Student',
                 'authorRole' => $article->author->role ?? 'Student',
-                'authorAvatar' => $article->author->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($article->author->name ?? 'Student'),
+                'authorAvatar' => $article->author->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($article->author->fullname ?? 'Student'),
                 
                 'date' => Carbon::parse($article->created_at)->format('M d'),
                 'readTime' => $article->read_time,
@@ -151,5 +152,22 @@ class ArticleController extends Controller
         return response()->json([
             'message' => 'Article deleted successfully!'
         ]);
+    }
+    public function userArticles($id)
+    {
+        // Find all articles where the user_id matches the seller's ID
+        $articles = Article::where('user_id', $id)
+            ->latest()
+            ->get()
+            ->map(function ($article) {
+                return [
+                    'id' => $article->id,
+                    'title' => $article->title,
+                    'excerpt' => Str::limit($article->content, 100), // Cuts a long article down to a snippet
+                    'date' => $article->created_at->format('M d, Y'), // e.g., "Oct 12, 2025"
+                ];
+            });
+
+        return response()->json(['articles' => $articles]);
     }
 }

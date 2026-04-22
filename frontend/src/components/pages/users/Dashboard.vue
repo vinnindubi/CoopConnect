@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useDisplay } from 'vuetify';
-// Import all our new API calls!
+
+// Notice we only need 3 service calls now, because getStudentUpcoming handles both sidebars!
 import { 
   getActiveAnnouncements, 
   getStudentFeed, 
-  getUpcomingEvents, 
-  getMarketplacePreview 
+  getStudentUpcoming 
 } from '@/services/studentService';
 
 const { smAndUp } = useDisplay();
@@ -15,7 +15,7 @@ const { smAndUp } = useDisplay();
 const isLoading = ref(true);
 const selectedFilter = ref('All Updates');
 
-//  NEW: Dialog State 
+// --- Dialog State ---
 const isPostDialogOpen = ref(false);
 const selectedPost = ref<any>(null);
 
@@ -24,19 +24,17 @@ const openPostDialog = (post: any) => {
   isPostDialogOpen.value = true;
 };
 
-// --- Data State (Now empty by default, waiting for the database!) ---
+// --- Data State ---
 const activeAnnouncements = ref<any[]>([]);
 const feedPosts = ref<any[]>([]);
 const upcomingEvents = ref<any[]>([]);
 const marketplaceItems = ref<any[]>([]);
 
+// Filter options 
 const filterOptions = ref([
-  'All Updates',
-  'Technology',
-  'Sports',
-  'Student Life',
-  'Administration',
-  'Clubs & Societies'
+  'All Updates', 'Technology', 'Sports', 'Administration',
+  'Clubs & Societies', 'Student Life', 'Housing', 
+  'Academics', 'Experiences', 'Tips & Tricks'   
 ]);
 
 // --- Computed Filters ---
@@ -52,28 +50,38 @@ const loadDashboardData = async () => {
   isLoading.value = true;
   
   try {
-    // Promise.all fetches everything at the exact same time for maximum speed
-    const [announcementsRes, feedRes, eventsRes, marketRes] = await Promise.all([
+    // We only need 3 calls! getStudentUpcoming fetches your combined getHomeData payload.
+    const [announcementsRes, feedRes, homeDataRes] = await Promise.all([
       getActiveAnnouncements(),
       getStudentFeed(),
-      getUpcomingEvents(),
-      getMarketplacePreview()
+      getStudentUpcoming() 
     ]);
-    //  const [announcementsRes,eventsRes ] = await Promise.all([
-    //   getActiveAnnouncements(),
-    //   getUpcomingEvents(),
-    // ]);
 
-    // Assign the real database data to our UI
-    // We add 'isExpanded: true' so the accordion starts open!
-    activeAnnouncements.value = announcementsRes.data.map((alert: any) => ({
+    // 1. Handle Announcements
+    activeAnnouncements.value = announcementsRes.data?.map((alert: any) => ({
       ...alert,
       isExpanded: true
-    }));
+    })) || [];
     
-    feedPosts.value = feedRes.data;
-    upcomingEvents.value = eventsRes.data;
-    marketplaceItems.value = marketRes.data;
+    // 2. Handle Feed
+    feedPosts.value = feedRes.data || [];
+
+    // 3. Handle Sidebar Widgets (Marketplace & Events)
+    const homeData = homeDataRes.data;
+    
+    // Assign the products directly
+    marketplaceItems.value = homeData.featured_products || [];
+
+    // Map the events and split the date string ("Oct 24, 2:00 PM") so the calendar UI looks perfect!
+    upcomingEvents.value = (homeData.upcoming_activities || []).map((event: any) => {
+      const parts = event.date.split(' '); // splits into ["Oct", "24,", "2:00", "PM"]
+      return {
+        ...event,
+        month: parts[0] || 'TBA',
+        day: parts[1] ? parts[1].replace(',', '') : '-',
+        time: parts[2] ? `${parts[2]} ${parts[3]}` : ''
+      };
+    });
 
   } catch (error) {
     console.error("Failed to load dashboard data:", error);
@@ -144,19 +152,6 @@ onMounted(() => {
                   <p class="text-body-1 font-weight-medium text-white mb-0" style="opacity: 0.95;">
                     {{ alert.message }}
                   </p>
-                  
-                  <div class="mt-4" v-if="alert.action_text || alert.action_link">
-                    <!-- <v-btn
-                      :href="alert.action_link || '#'"
-                      target="_blank"
-                      color="white"
-                      variant="outlined"
-                      class="text-none font-weight-black rounded-lg bg-white"
-                      :class="'text-' + alert.severity"
-                    >
-                      {{ alert.action_text || 'More Info' }}
-                    </v-btn> -->
-                  </div>
                 </div>
               </div>
             </v-expand-transition>
@@ -189,7 +184,7 @@ onMounted(() => {
 
             <template v-for="post in filteredPosts" :key="post.id">
               <v-card 
-                class="rounded-xl elevation-2 border-opacity-50 overflow-hidden cursor-pointer " 
+                class="rounded-xl elevation-2 border-opacity-50 overflow-hidden cursor-pointer" 
                 border
                 v-ripple
                 @click="openPostDialog(post)"
@@ -248,35 +243,33 @@ onMounted(() => {
             <div class="d-flex justify-space-between align-center pa-4 bg-surface-variant border-bottom">
               <div class="text-subtitle-2 font-weight-bold d-flex align-center gap-2">
                 <v-icon icon="mdi-shopping-outline" color="primary" size="small"></v-icon>
-                Marketplace
+                Marketplace Picks
               </div>
-              <span class="text-caption font-weight-bold text-primary text-uppercase cursor-pointer hover-underline">
-                Post Listing
-              </span>
+              <router-link to="/marketplace" class="text-caption font-weight-bold text-primary text-uppercase text-decoration-none hover-underline">
+                View All
+              </router-link>
             </div>
 
             <div class="pa-4 d-flex flex-column gap-4" style="max-height: 250px; overflow-y: auto;">
               <div v-if="!isLoading && marketplaceItems.length === 0" class="text-caption text-center text-medium-emphasis py-4">
                 No items currently listed.
               </div>
-              <div v-for="item in marketplaceItems" :key="item.id" class="d-flex gap-3 cursor-pointer marketplace-item">
+              
+              <router-link 
+                v-for="item in marketplaceItems" 
+                :key="item.id" 
+                :to="item.seller_id ? `/seller/${item.seller_id}` : '/marketplace'"
+                class="d-flex gap-3 cursor-pointer marketplace-item text-decoration-none text-high-emphasis"
+              >
                 <div>
-                  <v-img :src="item.image" :alt="item.title" width="64" height="64" cover class="rounded-lg shrink-0"></v-img>
+                  <v-img :src="item.image" :alt="item.title" width="64" height="64" cover class="rounded-lg shrink-0 bg-grey-lighten-4"></v-img>
                 </div>
-                <div>
-                  <div class="text-body-2 font-weight-medium item-title transition-colors">{{ item.title }}</div>
+                <div class="d-flex flex-column justify-center">
+                  <div class="text-body-2 font-weight-medium item-title transition-colors line-clamp-1">{{ item.title }}</div>
                   <div class="text-caption font-weight-bold text-primary mt-1">{{ item.price }}</div>
-                  <div class="text-caption text-medium-emphasis mt-1" style="font-size: 10px !important;">
-                    {{ item.location }} • {{ item.time }}
-                  </div>
                 </div>
-              </div>
+              </router-link>
             </div>
-
-            <v-divider></v-divider>
-            <v-btn variant="text" block to="/marketplace" color="grey-darken-1" class="text-none text-caption font-weight-bold py-3 rounded-0 bg-grey-lighten-5">
-              View All Commodities
-            </v-btn>
           </v-card>
 
           <v-card class="rounded-xl elevation-2 border-opacity-50" border>
@@ -294,26 +287,44 @@ onMounted(() => {
               <div v-if="!isLoading && upcomingEvents.length === 0" class="text-caption text-center text-medium-emphasis py-4">
                 No upcoming events scheduled.
               </div>
-              <div v-for="event in upcomingEvents" :key="event.id" class="d-flex gap-4">
+              
+              <div v-for="event in upcomingEvents" :key="event.id" class="d-flex align-start gap-4">
                 
                 <div 
-                  class="d-flex flex-column align-center justify-center rounded-xl border shrink-0" 
-                  style="width: 48px; height: 56px;"
-                  :class="event.highlight ? 'bg-orange-lighten-5 border-orange-lighten-3' : 'bg-surface-variant border-grey-lighten-2'"
+                  class="d-flex flex-column rounded-lg elevation-2 shrink-0 overflow-hidden text-center border" 
+                  style="width: 52px;"
+                  :class="event.highlight ? 'border-primary' : 'border-opacity-25'"
                 >
-                  <span class="text-uppercase font-weight-bold" style="font-size: 10px;" :class="event.highlight ? 'text-primary' : 'text-medium-emphasis'">
+                  <div 
+                    class="text-uppercase font-weight-bold" 
+                    style="font-size: 10px; padding: 4px 0; letter-spacing: 0.5px;"
+                    :class="event.highlight ? 'bg-primary text-white' : 'bg-grey-lighten-3 text-medium-emphasis'"
+                  >
                     {{ event.month }}
-                  </span>
-                  <span class="text-h6 font-weight-bold leading-none mt-1" :class="event.highlight ? 'text-primary' : 'text-high-emphasis'">
-                    {{ event.day }}
-                  </span>
+                  </div>
+                  <div class="bg-surface d-flex align-center justify-center" style="padding: 6px 0;">
+                    <span class="text-h6 font-weight-black leading-none" :class="event.highlight ? 'text-primary' : 'text-high-emphasis'">
+                      {{ event.day }}
+                    </span>
+                  </div>
                 </div>
 
-                <div class="flex-grow-1">
-                  <div class="text-body-2 font-weight-bold text-truncate">{{ event.title }}</div>
+                <div class="flex-grow-1" style="min-width: 0;">
+                  
+                  <div class="text-body-2 font-weight-bold line-clamp-2 mb-1" style="line-height: 1.2;">
+                    {{ event.title }}
+                  </div>
+                  
+                  <div class="text-caption font-weight-bold text-primary text-truncate">
+                    {{ event.club }}
+                  </div>
+                  
                   <div class="text-caption text-medium-emphasis d-flex align-center gap-1 mt-1">
-                    <v-icon :icon="event.icon" size="14"></v-icon>
-                    {{ event.location }}
+                    <v-icon icon="mdi-clock-outline" size="14" class="shrink-0"></v-icon> 
+                    <span class="text-truncate">{{ event.time }}</span>
+                    
+                    <v-icon icon="mdi-map-marker-outline" size="14" class="ml-2 shrink-0"></v-icon> 
+                    <span class="text-truncate">{{ event.location }}</span>
                   </div>
                 </div>
 
@@ -343,6 +354,7 @@ onMounted(() => {
 
     </v-row>
   </v-container>
+
   <v-dialog v-model="isPostDialogOpen" max-width="750" transition="dialog-bottom-transition">
       <v-card v-if="selectedPost" class="rounded-xl elevation-24 border-0 d-flex flex-column" max-height="90vh">
         
@@ -397,8 +409,8 @@ onMounted(() => {
           </div>
 
           <div class="post-content-reader rounded-xl pa-4 pa-md-5 bg-grey-lighten-4 border border-opacity-25" style="border-color: rgba(0,0,0,0.08) !important;">
-            <p class="text-body-2 text-grey-darken-3 mb-0" style="white-space: pre-wrap; line-height: 1.7; font-size: 1rem;">
-              {{ selectedPost.content }}
+            <p class="text-body-2 text-grey-darken-3 mb-0" style="white-space: pre-wrap; line-height: 1.7; font-size: 1rem;">              
+              {{ selectedPost.fullContent || selectedPost.content }}             
             </p>
           </div>
 
@@ -476,7 +488,7 @@ onMounted(() => {
   text-decoration: underline;
 }
 
-/* 6. Marketplace Hover Effect (Vue equivalent to group-hover) */
+/* 6. Marketplace Hover Effect */
 .marketplace-item:hover .item-title {
   color: rgb(var(--v-theme-primary));
 }
@@ -484,17 +496,39 @@ onMounted(() => {
   transition: color 0.2s ease-in-out;
 }
 
-/* 7. Gradient Background for Helplines */
+/* 7. Text Truncation */
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;  
+  overflow: hidden;
+}
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;  
+  overflow: hidden;
+}
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;  
+  overflow: hidden;
+}
+
+/* 8. Gradient Background for Helplines */
 .gradient-bg {
   background: linear-gradient(135deg, #a08b7d 0%, #d84315 100%);
 }
 .bg-white-opacity {
   background-color: rgba(255, 255, 255, 0.2) !important;
 }
+
+/* 9. Sticky Sidebar Settings */
 .sticky-sidebar {
   position: sticky;
   top: 88px; 
-  max-height: 250vh ; 
+  max-height: 250vh; 
   overflow-y: auto; 
 }
 

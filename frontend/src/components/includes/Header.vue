@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref ,inject } from "vue";
+import { ref ,inject, onMounted } from "vue";
 import { useTheme } from "vuetify";
-import { logoutUser } from "@/services/authService";
+import { logoutUser,getUserProfile } from "@/services/authService";
 // get sidebar toggle function from App.vue
 const toggleSidebar = inject("toggleSidebar") as () => void;
 const darkTheme= ref(true)
@@ -9,6 +9,20 @@ const theme = useTheme()
 const toggleTheme= ()=>{
   darkTheme.value =!darkTheme.value;
   theme.toggle();
+}
+const profile = ref({
+                    'avatar':''
+                  });
+const getUser = async () => {
+  try{ 
+       const response = await getUserProfile();
+       const userData = response.data.data;
+        profile.value.avatar= userData.avatar;
+
+  }catch(error){
+    console.log(error);
+
+  }
 }
 const handleLogOut= async ()=>{
   try{
@@ -21,6 +35,9 @@ const handleLogOut= async ()=>{
 
   }
 }
+onMounted(() => {
+  getUser();
+  });
 
 </script>
 
@@ -48,8 +65,9 @@ const handleLogOut= async ()=>{
     </v-btn>
     <v-menu>
       <template #activator="{props}">
-        <v-avatar v-bind="props">
-          <v-img src="https://randomuser.me/api/portraits/men/32.jpg" alt="User"/>
+        <v-avatar v-bind="props" color="primary-lighten-4">
+          <v-img v-if="profile.avatar" :src="profile.avatar" alt="User"/>
+          <v-icon v-else size="large" color="primary">mdi-account</v-icon>
         </v-avatar>
       </template>
       <v-list>
