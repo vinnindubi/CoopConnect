@@ -32,25 +32,26 @@ const filteredItems = computed(() => {
 });
 
 // --- Methods ---
-const handleToggleMembership = async (id: number) => {
+const handleToggleMembership = async (item: any) => {
   try {
-    // Call the backend API
-    const response = await apiToggleMembership(id);
+    const response = await apiToggleMembership(item.id);
     
-    // Find the item in our local state to update the UI instantly
-    let group = clubs.value.find(c => c.id === id);
-    if (!group) group = societies.value.find(s => s.id === id);
-    
-    if (group) {
-      group.currentUserRole = response.currentUserRole;
-      group.membersCount = response.newMembersCount;
-      
-      const actionText = response.currentUserRole ? 'joined' : 'left';
-      snackbarText.value = `Successfully ${actionText} ${group.name}!`;
-      showSnackbar.value = true;
-    }
+    // DEBUG: This will print exactly what Axios is returning
+    console.log("Raw API Response:", response);
+
+    // THE FIX: Safely grab the data whether Axios unpacks it or not!
+    const payload = response.data ? response.data : response;
+
+    // Update the UI
+    item.currentUserRole = payload.is_member ? 'Member' : null;
+    snackbarText.value = payload.message;
+    showSnackbar.value = true;
+
   } catch (error) {
-    snackbarText.value = 'Action failed. Please try again.';
+    // THE SMOKING GUN: This will print the exact JavaScript error breaking your code
+    console.error("EXACT JAVASCRIPT ERROR:", error);
+    
+    snackbarText.value = "Failed to update membership. Please try again.";
     showSnackbar.value = true;
   }
 };
@@ -155,7 +156,7 @@ onMounted(async () => {
                   elevation="1"
                   size="small"
                   class="text-none font-weight-bold rounded-pill px-4 shrink-0 transition-swing"
-                  @click.stop="handleToggleMembership(item.id)"
+                  @click.stop="handleToggleMembership(item)" 
                 >
                   <v-icon start size="16" :icon="item.currentUserRole ? 'mdi-check-circle' : 'mdi-plus-circle-outline'"></v-icon>
                   {{ item.currentUserRole ? 'Joined' : 'Join' }}

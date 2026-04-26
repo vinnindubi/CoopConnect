@@ -153,7 +153,7 @@ onMounted(async () => {
         
         <v-tabs v-model="activeTab" color="primary">
           <v-tab value="discover" class="text-none font-weight-bold">Discover</v-tab>
-          <v-tab value="my-schedule" class="text-none font-weight-bold">My Schedule</v-tab>
+          <!-- <v-tab value="my-schedule" class="text-none font-weight-bold">My Schedule</v-tab> -->
         </v-tabs>
 
         <div style="width: 100%; max-width: 350px;">
@@ -339,7 +339,7 @@ onMounted(async () => {
           <div class="text-caption text-medium-emphasis font-weight-medium">Don't miss out!</div>
           <div class="d-flex gap-3">
             <v-btn variant="text" color="medium-emphasis" class="text-none font-weight-bold px-4" @click="showEventDialog = false">Cancel</v-btn>
-            <v-btn color="primary" variant="flat" size="large" class="text-none font-weight-black px-8 rounded-lg">Confirm RSVP</v-btn>
+            <!-- <v-btn color="primary" variant="flat" size="large" class="text-none font-weight-black px-8 rounded-lg">Confirm RSVP</v-btn> -->
           </div>
         </v-card-actions>
       </v-card>

@@ -8,16 +8,15 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\StudentDashboardController;
 use App\Http\Controllers\MarketplaceController;
-use Illuminate\Http\Request;
+use App\Http\Controllers\ForumController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum'); // WE ARE NOT CURRENTLY USING SANCTUM
 
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/mpesa/callback', [MpesaController::class, 'callback']); // Receives the receipt
+Route::get('/forum', [ForumController::class, 'index']);
+Route::get('/forum/trending', [ForumController::class, 'trending']);
 
 // ==========================================
 // PUBLIC ROUTES (Anyone can view these)
@@ -53,7 +52,15 @@ Route::middleware('auth:api')->group(function () {
     Route::delete('/articles/delete/{id}', [ArticleController::class, 'destroy']);
     // Fetch articles for a specific user
     Route::get('/users/{id}/articles', [ArticleController::class, 'userArticles']);
-    
+    Route::get('/user/articles', [AuthController::class, 'myArticles']);
+    Route::get('/user/articles/{post}', [AuthController::class, 'showArticle']);
+    Route::put('/user/articles/{post}', [AuthController::class, 'updateArticle']);
+    Route::delete('/user/articles/{post}', [AuthController::class, 'destroyArticle']);
+    Route::get('/user/products/{item}', [AuthController::class, 'showProduct']);
+    Route::get('/user/products', [AuthController::class, 'myProducts']);
+    Route::post('/user/products', [AuthController::class, 'storeProduct']);
+    Route::put('/user/products/{item}', [AuthController::class, 'updateProduct']);
+    Route::delete('/user/products/{item}', [AuthController::class, 'destroyProduct']);
     // --- Groups Base CRUD ---
     // Handles store(), update(), and destroy() for the groups.
     // (Uses 'except' because index and show are public above)
@@ -64,7 +71,7 @@ Route::middleware('auth:api')->group(function () {
     Route::delete('/groups/{id}/posts/{postId}', [GroupController::class, 'destroyPost']); // Admin delete post
     
     // --- Group Membership (Student Actions) ---
-    Route::post('/groups/{id}/toggleMembership', [GroupController::class, 'toggleMembership']);
+    Route::post('/groups/{group}/toggle-membership', [GroupController::class, 'toggleMembership']);
     
     // --- Group Admin Dashboard Actions ---
     Route::get('/groups/{id}/members', [GroupController::class, 'getMembers']); // Fetch all members
@@ -95,4 +102,9 @@ Route::middleware('auth:api')->group(function () {
     //marketplace
     Route::get('/marketplace', [MarketplaceController::class, 'index']);
     Route::get('/sellers/{id}', [MarketplaceController::class, 'show']);
+
+    Route::post('/forum', [ForumController::class, 'store']);
+    Route::post('/forum/{post}/upvote', [ForumController::class, 'upvote']);
+    Route::put('/forum/{post}', [ForumController::class, 'update']);
+    Route::delete('/forum/{post}', [ForumController::class, 'destroy']);
 });

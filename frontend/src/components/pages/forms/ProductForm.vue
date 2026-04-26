@@ -1,75 +1,128 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import router from '@/router';
+import { ref, onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+// Import your actual API services
+import { createProduct, getProduct, updateProduct } from '@/services/authService';
+
+const route = useRoute();
+const router = useRouter();
+
+// Check if we are editing an existing product (e.g., /editProduct/5)
+const productId = route.params.id; 
 
 // --- State ---
+const isLoading = ref(false);
 const isSubmitting = ref(false);
 const showSnackbar = ref(false);
 const snackbarText = ref('');
-const imagePreview = ref<string | null>(null);
 
 // --- Form Data ---
-// In a real scenario, if editing, you would fetch the product from Laravel and populate this.
 const productForm = ref({
-  id: null,
-  name: '',
+  id: null as number | string | null,
+  title: '',     // Changed from 'name' to 'title' to match Laravel database!
   price: '',
-  category: null,
-  condition: null,
+  category: null as string | null,
+  condition: null as string | null,
   description: '',
-  image: null as File[] | null, // Vuetify v-file-input uses an array of files
+  image: '',     // Changed to a standard string for the URL
 });
 
 // --- Options ---
-const categoryOptions = ['Clothing', 'Electronics', 'Academic Material', 'Services', 'Dorm Gear', 'Food & Snacks', 'Other'];
-const conditionOptions = ['Brand New', 'Like New', 'Good', 'Fair'];
+const categoryOptions = ['Electronics', 
+                'Fashion', 
+                'Academic', 
+                'Services'];
+const conditionOptions = ['new','good','fair','poor'];
 
 // --- Methods ---
-const handleImageUpload = (fileArray: File[] | undefined) => {
-  if (fileArray && fileArray.length > 0) {
-    const file = fileArray[0];
-    // Create a temporary URL to show the user a preview of what they just selected
-    imagePreview.value = URL.createObjectURL(file);
-  } else {
-    imagePreview.value = null;
-  }
-};
-
 const triggerSnackbar = (message: string) => {
   snackbarText.value = message;
   showSnackbar.value = true;
 };
 
+// 1. Fetch Product (If Editing)
+const fetchProductData = async () => {
+  if (!productId) return; // If there's no ID in the URL, we are adding a new product, so skip fetching!
+
+  isLoading.value = true;
+  try {
+    const response = await getProduct(productId);
+    const data = response.data.data;
+    
+    // Populate the form with the database data
+    productForm.value = {
+      id: data.id,
+      title: data.title,
+      price: data.price,
+      category: data.category,
+      condition: data.condition || null, 
+      description: data.description,
+      image: data.image || '',
+    };
+  } catch (error) {
+    console.error('Failed to load product:', error);
+    triggerSnackbar('Could not load product. It may have been deleted.');
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+// 2. Save Product (Handles both Create and Update)
 const handleSaveProduct = async () => {
   isSubmitting.value = true;
   
   try {
-    // TODO: Send FormData to Laravel backend here
-    // Example: await saveProduct(productForm.value);
+    // The payload exactly matches what Laravel expects
+    const payload = {
+      title: productForm.value.title,
+      price: productForm.value.price,
+      category: productForm.value.category,
+      description: productForm.value.description,
+      image: productForm.value.image,
+      // Note: If you want to save 'condition' to the DB, remember to add it to your Laravel migration and $fillable array!
+    };
+
+    if (productForm.value.id) {
+      // If we have an ID, UPDATE it
+      await updateProduct(productForm.value.id, payload);
+      triggerSnackbar('Product updated successfully!');
+    } else {
+      // If we don't have an ID, CREATE it
+      await createProduct(payload);
+      triggerSnackbar('Product added successfully!');
+    }
     
+    // Redirect back to profile after a short delay so they see the success message
     setTimeout(() => {
-      triggerSnackbar('Product saved successfully!');
-      isSubmitting.value = false;
-      // router.push('/seller/dashboard'); // Redirect after saving
-    }, 1000); // Simulating network delay
+      router.push('/profile');
+    }, 1000);
 
   } catch (error) {
     console.error("Failed to save product:", error);
     triggerSnackbar('Failed to save product. Please try again.');
+  } finally {
     isSubmitting.value = false;
   }
 };
 
 const cancelEdit = () => {
-  // Clear the form or go back to the previous page
-  console.log("Edit cancelled");
   router.push('/profile');
 };
+
+// Run the fetch check as soon as the page loads
+onMounted(() => {
+  fetchProductData();
+});
 </script>
 
 <template>
   <v-container fluid class="pa-0 pa-md-6 bg-grey-lighten-4 min-vh-100 d-flex justify-center">
-    <v-card class="rounded-xl border-opacity-25 w-100 mt-md-4 mb-md-8" style="max-width: 800px;" border elevation="3" bg-color="white">
+    
+    <v-card v-if="isLoading" class="rounded-xl border-opacity-25 w-100 mt-md-4 mb-md-8 pa-10 text-center" style="max-width: 800px;" border elevation="3">
+       <v-progress-circular indeterminate color="primary" size="64"></v-progress-circular>
+    </v-card>
+
+    <v-card v-else class="rounded-xl border-opacity-25 w-100 mt-md-4 mb-md-8" style="max-width: 800px;" border elevation="3" bg-color="white">
       
       <div class="pa-6 pa-md-8 border-b border-opacity-25 bg-grey-lighten-5">
         <h1 class="text-h4 font-weight-black text-indigo-darken-4 mb-1">
@@ -85,24 +138,22 @@ const cancelEdit = () => {
           <div class="d-flex flex-column flex-sm-row align-start align-sm-center gap-4">
             
             <v-avatar rounded="lg" size="120" color="grey-lighten-3" border class="elevation-1 border-dashed">
-              <v-img v-if="imagePreview" :src="imagePreview" cover></v-img>
+              <v-img v-if="productForm.image" :src="productForm.image" cover></v-img>
               <v-icon v-else icon="mdi-camera-plus-outline" size="40" color="grey-darken-1"></v-icon>
             </v-avatar>
             
             <div class="flex-grow-1 w-100">
-              <v-file-input
+              <v-text-field
                 v-model="productForm.image"
-                accept="image/png, image/jpeg, image/webp"
-                label="Upload a clear photo"
+                placeholder="https://images.unsplash.com/..."
+                label="Image URL Link"
                 variant="outlined"
                 density="compact"
-                prepend-icon=""
-                prepend-inner-icon="mdi-image"
+                prepend-inner-icon="mdi-link"
                 hide-details
                 class="rounded-lg mb-2"
-                @update:model-value="handleImageUpload"
-              ></v-file-input>
-              <div class="text-caption text-medium-emphasis">Recommended size: 800x800px. Max size: 2MB.</div>
+              ></v-text-field>
+              <div class="text-caption text-medium-emphasis">Paste a direct link to an image.</div>
             </div>
           </div>
         </div>
@@ -114,7 +165,7 @@ const cancelEdit = () => {
           <v-col cols="12" md="8" class="pb-0">
             <label class="text-caption font-weight-bold mb-1 d-block text-grey-darken-3">Item Name <span class="text-error">*</span></label>
             <v-text-field 
-              v-model="productForm.name" 
+              v-model="productForm.title" 
               placeholder="e.g., Introduction to Calculus Textbook"
               variant="outlined" 
               class="rounded-lg mb-4"
@@ -208,7 +259,6 @@ const cancelEdit = () => {
 </template>
 
 <style scoped>
-/* Optional: Adds a nice gap utility class if your Vuetify version doesn't have it natively */
 .gap-3 { gap: 12px; }
 .gap-4 { gap: 16px; }
 </style>

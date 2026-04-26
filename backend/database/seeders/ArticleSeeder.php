@@ -12,7 +12,7 @@ class ArticleSeeder extends Seeder
     {
         // We need a user to assign as the author. Let's find the first user, or create a dummy one.
         $user = User::first() ?? User::factory()->create([
-            'name' => 'Campus Admin',
+            'fullname' => 'Campus Admin',
             'email' => 'admin@campus.edu',
             'password' => bcrypt('password'), // added a safe default password just in case
         ]);

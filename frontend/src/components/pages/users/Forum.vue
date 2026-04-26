@@ -1,135 +1,26 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+// Adjust this import path depending on where you saved the composable
+import { useForum } from '@/composables/useForum'; 
 
-// --- State ---
-const searchQuery = ref('');
-const selectedCategory = ref('All');
-const showNewPostDialog = ref(false);
-
-// --- Options ---
-const categories = ['All', 'Campus Life', 'Academics', 'Housing', 'Attachment & Careers', 'Marketplace', 'Rants'];
-
-// --- Mock Data ---
-const threads = ref([
-  {
-    id: 1,
-    title: "Is the new 24/7 library schedule actually helping anyone?",
-    excerpt: "I've been going to the library at 2 AM and it's mostly empty, but the guards seem exhausted. Are we actually using this or should the school revert the budget to something else?",
-    author: { name: 'David O.', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=150', isVerified: true },
-    category: 'Campus Life',
-    upvotes: 142,
-    comments: 56,
-    timeAgo: '2 hours ago',
-    hot: true
-  },
-  {
-    id: 2,
-    title: "Looking for a roommate (Male) - Ruiru Area",
-    excerpt: "Hey guys, my current roommate is graduating. I have a 2-bedroom place near the main gate. Rent is KES 8,000 per person. Looking for someone clean and preferably in 3rd/4th year.",
-    author: { name: 'Brian Kamau', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=150', isVerified: false },
-    category: 'Housing',
-    upvotes: 12,
-    comments: 8,
-    timeAgo: '5 hours ago',
-    hot: false
-  },
-  {
-    id: 3,
-    title: "Best tech companies for Software Engineering attachments?",
-    excerpt: "I'm starting my attachment search for next semester. Has anyone here interned at Safaricom or Microsoft ADC? What was the interview process like?",
-    author: { name: 'Sarah W.', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150', isVerified: true },
-    category: 'Attachment & Careers',
-    upvotes: 89,
-    comments: 34,
-    timeAgo: '1 day ago',
-    hot: true
-  },
-  {
-    id: 4,
-    title: "The WiFi in Block C has been down for 3 days 😡",
-    excerpt: "How are we supposed to submit assignments when the school WiFi keeps dropping? I've used up all my mobile data. Anyone else facing this issue?",
-    author: { name: 'Anonymous', avatar: '', isVerified: false },
-    category: 'Rants',
-    upvotes: 215,
-    comments: 89,
-    timeAgo: '2 days ago',
-    hot: false
-  }
-]);
-
-// --- Computed ---
-// Filters the threads based on the search bar and the selected category chip
-const filteredThreads = computed(() => {
-  let filtered = threads.value;
-  
-  if (selectedCategory.value !== 'All') {
-    filtered = filtered.filter(t => t.category === selectedCategory.value);
-  }
-  
-  if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase();
-    filtered = filtered.filter(t => 
-      t.title.toLowerCase().includes(query) || 
-      t.excerpt.toLowerCase().includes(query)
-    );
-  }
-  
-  return filtered;
-});
-
-// --- Methods ---
-const upvoteThread = (id: number) => {
-  const thread = threads.value.find(t => t.id === id);
-  if (thread) thread.upvotes++;
-  // TODO: Send upvote to Laravel backend
-};
-// --- Form State for New Topic ---
-const formRef = ref();
-const isSubmitting = ref(false);
-const newTopic = ref({
-  title: '',
-  category: '',
-  excerpt: ''
-});
-
-// We don't want users to select "All" as a category when posting
-const postableCategories = computed(() => categories.filter(c => c !== 'All'));
-
-// --- Form Validation Rules ---
-const rules = {
-  required: (v: string) => !!v || 'This field is required',
-  minLength: (v: string) => (v && v.length >= 10) || 'Must be at least 10 characters'
-};
-
-const submitTopic = async () => {
-  const { valid } = await formRef.value.validate();
-  
-  if (valid) {
-    isSubmitting.value = true;
-    
-    // TODO: Replace this timeout with your actual Laravel API call!
-    // Example: await apiClient.post('/threads', newTopic.value);
-    setTimeout(() => {
-      // Mocking a successful post by adding it to the top of our local array
-      threads.value.unshift({
-        id: Date.now(),
-        title: newTopic.value.title,
-        excerpt: newTopic.value.excerpt,
-        author: { name: 'You', avatar: '', isVerified: false }, // Replace with logged-in user
-        category: newTopic.value.category,
-        upvotes: 0,
-        comments: 0,
-        timeAgo: 'Just now',
-        hot: false
-      });
-
-      // Reset and close
-      isSubmitting.value = false;
-      showNewPostDialog.value = false;
-      formRef.value.reset();
-    }, 1000);
-  }
-};
+// Destructure exactly what the template needs from our logic file
+const {
+  currentUser,
+  threads,
+  trendingTags,
+  isLoading,
+  searchQuery,
+  selectedCategory,
+  categories,
+  postableCategories,
+  showNewPostDialog,
+  isSubmitting,
+  formRef,
+  newTopic,
+  rules,
+  submitTopic,
+  upvoteThread,
+  deleteThread
+} = useForum();
 </script>
 
 <template>
@@ -169,9 +60,13 @@ const submitTopic = async () => {
             </v-chip-group>
           </v-card>
 
-          <div v-if="filteredThreads.length > 0" class="d-flex flex-column gap-4">
+          <div v-if="isLoading" class="d-flex justify-center pa-10">
+            <v-progress-circular indeterminate color="primary" size="64"></v-progress-circular>
+          </div>
+
+          <div v-else-if="threads.length > 0" class="d-flex flex-column gap-4">
             <v-card 
-              v-for="thread in filteredThreads" 
+              v-for="thread in threads" 
               :key="thread.id" 
               class="rounded-xl border-opacity-25 transition-swing bg-surface" 
               border 
@@ -227,6 +122,17 @@ const submitTopic = async () => {
                     <v-icon start icon="mdi-comment-text-outline" size="18"></v-icon> {{ thread.comments }} Replies
                   </v-btn>
 
+                  <v-btn 
+                    v-if="currentUser && thread.author.id === currentUser.id"
+                    variant="text" 
+                    color="error" 
+                    size="small" 
+                    class="rounded-pill font-weight-bold px-4 text-none"
+                    @click.stop="deleteThread(thread.id)"
+                  >
+                    <v-icon start icon="mdi-delete-outline" size="18"></v-icon> Delete
+                  </v-btn>
+
                   <v-spacer></v-spacer>
 
                   <v-chip v-if="thread.hot" size="small" color="error" variant="flat" class="font-weight-bold px-3">
@@ -271,28 +177,20 @@ const submitTopic = async () => {
                 Trending Right Now
               </div>
               <v-list lines="one" class="py-2 bg-transparent">
-                <v-list-item link class="px-4">
+                <v-list-item link class="px-4" v-for="tag in trendingTags" :key="tag.tag">
                   <div class="d-flex align-center justify-space-between w-100">
-                    <span class="font-weight-bold text-body-2 text-high-emphasis">#Graduation2026</span>
-                    <span class="text-caption text-medium-emphasis">142 posts</span>
+                    <span class="font-weight-bold text-body-2 text-high-emphasis">{{ tag.tag }}</span>
+                    <span class="text-caption text-medium-emphasis">{{ tag.count }}</span>
                   </div>
                 </v-list-item>
-                <v-list-item link class="px-4">
-                  <div class="d-flex align-center justify-space-between w-100">
-                    <span class="font-weight-bold text-body-2 text-high-emphasis">#HELF_Loans</span>
-                    <span class="text-caption text-medium-emphasis">89 posts</span>
-                  </div>
-                </v-list-item>
-                <v-list-item link class="px-4">
-                  <div class="d-flex align-center justify-space-between w-100">
-                    <span class="font-weight-bold text-body-2 text-high-emphasis">#LostAndFound</span>
-                    <span class="text-caption text-medium-emphasis">34 posts</span>
-                  </div>
-                </v-list-item>
+
+                <div v-if="trendingTags.length === 0" class="pa-4 text-caption text-center text-medium-emphasis">
+                  No trending topics yet.
+                </div>
               </v-list>
             </v-card>
 
-           <v-card class="rounded-xl border-opacity-25 bg-surface" border elevation="1">
+            <v-card class="rounded-xl border-opacity-25 bg-surface" border elevation="1">
                 <div class="pa-4 border-b border-opacity-25 font-weight-black text-uppercase text-caption text-medium-emphasis tracking-widest d-flex align-center">
                     <v-icon icon="mdi-shield-check-outline" size="16" class="mr-2 text-primary"></v-icon> Forum Rules
                 </div>
@@ -311,6 +209,7 @@ const submitTopic = async () => {
 
     </v-container>
   </v-container>
+
   <v-dialog v-model="showNewPostDialog" max-width="600" persistent>
       <v-card class="rounded-xl border-opacity-25 bg-surface">
         <v-card-title class="d-flex align-center justify-space-between pa-6 border-b border-opacity-25">
@@ -342,17 +241,36 @@ const submitTopic = async () => {
               class="mb-4"
             ></v-select>
 
-            <div class="text-subtitle-2 font-weight-bold mb-2">Details</div>
+            <div class="d-flex align-center justify-space-between mb-2">
+               <div class="text-subtitle-2 font-weight-bold">Details</div>
+               <div class="text-caption text-primary font-weight-medium">Include #hashtags to trend!</div>
+            </div>
             <v-textarea
               v-model="newTopic.excerpt"
               :rules="[rules.required, rules.minLength]"
-              placeholder="Share more details, ask your question, or explain your thoughts..."
+              placeholder="Share details, ask a question... (e.g., The WiFi in Block C is down #CampusLife)"
               variant="outlined"
               auto-grow
               rows="4"
               counter
               class="mb-2"
             ></v-textarea>
+
+            <v-card class="bg-background mt-2 pa-3 rounded-lg border-opacity-25" border elevation="0">
+              <v-switch
+                v-model="newTopic.isAnonymous"
+                color="primary"
+                hide-details
+                density="compact"
+                class="mt-0"
+              >
+                <template v-slot:label>
+                  <span class="text-body-2 font-weight-medium text-high-emphasis ml-2">Post Anonymously</span>
+                </template>
+              </v-switch>
+              <p class="text-caption text-medium-emphasis ml-12 mt-n1">Your name and profile picture will be hidden from other students.</p>
+            </v-card>
+
           </v-form>
         </v-card-text>
 
@@ -376,15 +294,15 @@ const submitTopic = async () => {
           </v-btn>
         </v-card-actions>
       </v-card>
-    </v-dialog>
+  </v-dialog>
 </template>
 
 <style scoped>
-/* Utility class to keep spacing consistent */
+/* Utility classes */
 .gap-4 { gap: 16px; }
 .gap-2 { gap: 8px; }
 
-/* Truncates text with an ellipsis after 2 lines so long posts don't break the UI */
+/* Truncates long text gracefully */
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -392,9 +310,7 @@ const submitTopic = async () => {
   overflow: hidden;
 }
 
-/* Nice hover effect for thread titles. 
-  By using the CSS variable --v-theme-primary, this naturally works in dark mode! 
-*/
+/* Beautiful hover state that adapts to your theme colors automatically */
 .hover-text-primary:hover {
   color: rgb(var(--v-theme-primary)) !important; 
   text-decoration: underline;

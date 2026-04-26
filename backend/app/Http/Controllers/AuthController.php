@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\MarketplaceProduct;
+use App\Models\Article;
 use Hash;
 use Illuminate\Support\Facades\Auth;
 class AuthController extends Controller
@@ -143,4 +145,126 @@ public function getPendingSellers() {
         'data' => $formattedUsers // Send the mapped data instead of the raw database output
     ], 200);
 }
+public function myArticles()
+{
+    // Assuming a user 'hasMany' posts
+    $articles = auth()->user()->articles()->latest()->get();
+    return response()->json(['data' => $articles]);
+}
+
+public function myProducts()
+{
+    // Assuming a user 'hasMany' marketplaceItems
+    $products = auth()->user()->marketplaceProducts()->latest()->get();
+    return response()->json(['data' => $products]);
+}
+public function destroyArticle(Article $post)
+{
+    // Extra security: Ensure the user actually owns this post!
+    if ($post->user_id != auth()->id()) {
+        return response()->json(['message' => 'Unauthorized'], 403);
+    }
+    
+    $post->delete();
+    return response()->json(['message' => 'Deleted']);
+}
+
+public function destroyProduct(MarketplaceProduct $item)
+{
+    if ($item->user_id != auth()->id()) {
+        return response()->json(['message' => 'Unauthorized'], 403);
+    }
+    
+    $item->delete();
+    return response()->json(['message' => 'Deleted']);
+}
+// ==========================================
+    // ARTICLES
+    // ==========================================
+    public function showArticle(Article $post)
+    {
+        // Security: Ensure the user owns this post
+        if ($post->user_id != auth()->id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+        
+        return response()->json(['data' => $post]);
+    }
+
+    public function updateArticle(Request $request, Article $post)
+    {
+        if ($post->user_id != auth()->id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        // Validate the exact fields coming from Vue
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'category' => 'required|string',       // <--- Added validation
+            'image' => 'nullable|url',             // <--- Added validation (nullable in case they leave it blank)
+            'excerpt' => 'required|string',
+            'content' => 'required|string',
+        ]);
+
+        // This line does the direct edit!
+        $post->update($validated);
+
+        return response()->json(['message' => 'Article updated successfully', 'data' => $post]);
+    }
+
+    // ==========================================
+    // PRODUCTS (MARKETPLACE)
+    // ==========================================
+    public function showProduct(MarketplaceProduct $item)
+    {
+        if ($item->user_id != auth()->id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+        
+        return response()->json(['data' => $item]);
+    }
+
+    public function updateProduct(Request $request, MarketplaceProduct $item)
+    {
+        if ($item->user_id != auth()->id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'price' => 'required|numeric',
+            'category' => 'required|string',
+            'description' => 'required|string',
+            'image' => 'nullable|url',
+        ]);
+
+        $item->update($validated);
+
+        return response()->json(['message' => 'Product updated successfully', 'data' => $item]);
+    }
+    public function storeProduct(Request $request)
+    {
+        // 1. Validate the incoming data from your Vue form
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'price' => 'required|numeric|min:0',
+            'category' => 'required|string',
+            'condition' => 'nullable|string', // Captures the 'Brand New', 'Like New', etc.
+            'description' => 'nullable|string',
+            'image' => 'nullable|url', // Ensures the user actually pasted a valid link
+        ]);
+
+        // 2. Attach the currently logged-in user's ID to the data
+        $validated['user_id'] = auth()->id();
+
+        // 3. Create the product in the database
+        // Note: Change 'MarketplaceProduct' if your model is named something else!
+        $product = MarketplaceProduct::create($validated);
+
+        // 4. Return a successful JSON response back to Vue
+        return response()->json([
+            'message' => 'Product added successfully',
+            'data' => $product
+        ], 201); // 201 is the standard HTTP status code for "Created"
+    }
  }

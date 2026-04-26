@@ -26,6 +26,8 @@ import ClubPublicProfile from '@/components/pages/clubs/ClubPublicProfile.vue';
 import ManageClub from '@/components/pages/clubs/ManageClub.vue';
 import Donate from '@/components/pages/users/Donate.vue';
 import SellerProfile from '@/components/pages/users/SellerProfile.vue';
+import EditArticle from '@/components/pages/forms/EditArticle.vue';
+import EditProduct from '@/components/pages/forms/EditProduct.vue';
 
 const routes=[{
     path:'/',
@@ -48,7 +50,9 @@ const routes=[{
         {path: '/clubsAndSocieties/:id',name: 'ClubProfile',component: ClubPublicProfile },
         {path:'/clubs/:id/manage',name:'ManageClub',component:ManageClub},
         {path:'/donate',name:'Donations',component:Donate},
-        { path: '/seller/:id', component: SellerProfile }
+        { path: '/seller/:id', component: SellerProfile },
+        {path:'/editArticle/:id',name:'EditArticle', component:EditArticle},
+        {path:'/editProduct/:id',name:'EditProduct',component:EditProduct}
     ]
     },
     {

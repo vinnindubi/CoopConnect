@@ -9,8 +9,8 @@ export const getGroupById = (id: number) => {
   return apiClient.get(`/groups/${id}`);
 };
 
-export const toggleGroupMembership = (id: number) => {
-  return apiClient.post(`/groups/${id}/toggle-membership`);
+export const toggleGroupMembership = (groupId: number) => {
+  return apiClient.post(`/groups/${groupId}/toggle-membership`);
 };
 export const createGroupPost = (groupId: number, content: string) => {
   return apiClient.post(`/groups/${groupId}/posts`, { content });

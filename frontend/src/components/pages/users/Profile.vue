@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted} from 'vue';
-import { getUserProfile, updateUser } from '@/services/authService';
-import router from '@/router';
+import { getUserProfile, updateUser,getMyArticles, getMyProducts,deleteMyArticle, deleteMyProduct } from '@/services/authService';
+import getUserArticles from '@/services/articleService';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
 
 // ==========================================
 // 1. STATE: Personal Information
@@ -43,10 +46,7 @@ const categoryOptions = ['Clothing', 'Electronics', 'Academic Material', 'Servic
 // ==========================================
 // 2. STATE: Articles
 // ==========================================
-const articles = ref([
-  { id: 1, title: 'Surviving Finals Week', date: 'Oct 12, 2025', excerpt: 'My top 5 tips for not losing your mind during exams.' },
-  { id: 2, title: 'Best Cheap Eats Around Campus', date: 'Sep 28, 2025', excerpt: 'Where to get the best chapati and beans for under KES 150.' }
-]); 
+const articles = ref<any[]>([]); 
 
 const triggerArticleAction = (action: string, id?: number) => {
   triggerSnackbar(`${action} Article ${id ? '#' + id : ''}`);
@@ -55,14 +55,64 @@ const triggerArticleAction = (action: string, id?: number) => {
 // ==========================================
 // 3. STATE: Seller Catalogue
 // ==========================================
-const catalogue = ref([
-  { id: 1, name: 'Advanced Calculus Textbook', price: 'KES 1,200', image: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=300' },
-  { id: 2, name: 'MacBook Pro Charger', price: 'KES 3,500', image: 'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&q=80&w=300' },
-  { id: 3, name: 'Drawing Tablet', price: 'KES 5,000', image: 'https://images.unsplash.com/photo-1584905066893-7d5c142ba4e1?auto=format&fit=crop&q=80&w=300' }
-]);
-
+// const catalogue = ref([
+//   { id: 1, name: 'Advanced Calculus Textbook', price: 'KES 1,200', image: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=300' },
+//   { id: 2, name: 'MacBook Pro Charger', price: 'KES 3,500', image: 'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&q=80&w=300' },
+//   { id: 3, name: 'Drawing Tablet', price: 'KES 5,000', image: 'https://images.unsplash.com/photo-1584905066893-7d5c142ba4e1?auto=format&fit=crop&q=80&w=300' }
+// ]);
+const catalogue = ref<any[]>([]);
 const triggerProductAction = (action: string, id?: number) => {
   triggerSnackbar(`${action} Product ${id ? '#' + id : ''}`);
+};
+const fetchUserContent = async () => {
+  try {
+    // Fetch both simultaneously for faster loading
+    const [articlesRes, productsRes] = await Promise.all([
+      getMyArticles(),
+      getMyProducts()
+    ]);
+
+   // 1. SAFELY EXTRACT THE ARRAYS
+    // This checks if the array is nested inside .data.data (standard Axios + Laravel Resource) 
+    // OR if it's just inside .data (Custom Fetch wrappers)
+    const articlesArray = articlesRes.data?.data || articlesRes.data || [];
+    const productsArray = productsRes.data?.data || productsRes.data || [];
+
+    // Log them to ensure we captured the actual arrays
+    // console.log('Extracted Articles:', articlesArray);
+    // console.log('Extracted Products:', productsArray);
+
+    // 2. MAP ARTICLES
+    if (Array.isArray(articlesArray)) {
+      articles.value = articlesArray.map((article: any) => ({
+        id: article.id,
+        title: article.title,
+        date: new Date(article.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+        excerpt: article.excerpt
+      }));
+    }
+
+    // 3. MAP PRODUCTS
+    if (Array.isArray(productsArray)) {
+      catalogue.value = productsArray.map((product: any) => ({
+        id: product.id,
+        name: product.title || product.name, // Fallback just in case column names differ
+        price: `KES ${Number(product.price).toLocaleString()}`,
+        image: product.image || 'https://via.placeholder.com/300' 
+      }));
+    }
+
+    catalogue.value = productsRes.data.data.map((product: any) => ({
+      id: product.id,
+      name: product.title, // Assuming your DB uses 'title' for marketplace items
+      // Format the price nicely
+      price: `KES ${Number(product.price).toLocaleString()}`,
+      image: product.image || 'https://via.placeholder.com/300' // Fallback image
+    }));
+
+  } catch (error) {
+    console.error('Error fetching user content:', error);
+  }
 };
 
 // ==========================================
@@ -164,8 +214,55 @@ const handleUpdateProfile = async () =>{
       console.log(error)
     }
 }
+const handleEditArticle = (id: number) => {
+  // Navigate to your edit route, passing the ID
+  router.push(`/editArticle/${id}`); 
+};
+
+const handleDeleteArticle = async (id: number) => {
+  if (!confirm('Are you sure you want to permanently delete this article?')) return;
+
+  try {
+    // 1. Optimistic UI: Instantly remove it from the array
+    articles.value = articles.value.filter(article => article.id !== id);
+    triggerSnackbar('Article deleted successfully.');
+
+    // 2. Tell the backend to delete it
+    await deleteMyArticle(id);
+  } catch (error) {
+    console.error('Failed to delete article:', error);
+    triggerSnackbar('Error deleting article. Please try again.');
+    // Optional: Refresh the list if it fails to put the item back
+    // fetchUserContent(); 
+  }
+};
+
+// ==========================================
+// ACTION HANDLERS: Products
+// ==========================================
+const handleEditProduct = (id: number) => {
+  // Navigate to your edit route, passing the ID
+  router.push(`/editProduct/${id}`); 
+};
+
+const handleDeleteProduct = async (id: number) => {
+  if (!confirm('Are you sure you want to permanently remove this product from your store?')) return;
+
+  try {
+    // 1. Optimistic UI Update
+    catalogue.value = catalogue.value.filter(product => product.id !== id);
+    triggerSnackbar('Product removed from store.');
+
+    // 2. Tell the backend to delete it
+    await deleteMyProduct(id);
+  } catch (error) {
+    console.error('Failed to delete product:', error);
+    triggerSnackbar('Error deleting product. Please try again.');
+  }
+};
 onMounted(() => {
   getUser();
+  fetchUserContent();
   });
 </script>
 
@@ -246,6 +343,33 @@ onMounted(() => {
           </div>
 
           <v-form v-else @submit.prevent="handleUpdateProfile" class="mt-4">
+            
+            <v-row class="mb-2">
+              <v-col cols="12" sm="6" class="pb-0">
+                <label class="text-caption font-weight-bold mb-1 d-block">Profile Avatar (Image URL)</label>
+                <v-text-field 
+                  v-model="profile.avatar" 
+                  placeholder="https://..." 
+                  variant="outlined" 
+                  density="compact" 
+                  class="rounded-lg"
+                  prepend-inner-icon="mdi-account-circle-outline"
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" sm="6" class="pb-0">
+                <label class="text-caption font-weight-bold mb-1 d-block">Cover Photo (Image URL)</label>
+                <v-text-field 
+                  v-model="profile.coverPhoto" 
+                  placeholder="https://..." 
+                  variant="outlined" 
+                  density="compact" 
+                  class="rounded-lg"
+                  prepend-inner-icon="mdi-image-area"
+                ></v-text-field>
+              </v-col>
+            </v-row>
+            <v-divider class="mb-4 opacity-20"></v-divider>
+
             <v-row>
               <v-col cols="12" sm="6">
                 <label class="text-caption font-weight-bold mb-1 d-block">Full Name</label>
@@ -315,10 +439,10 @@ onMounted(() => {
               </div>
               
               <div class="d-flex shrink-0">
-                <v-btn color="primary" variant="tonal" size="small" class="text-none font-weight-bold rounded-lg mr-2" @click="triggerArticleAction('Editing', article.id)">
+                <v-btn color="primary" variant="tonal" size="small" class="text-none font-weight-bold rounded-lg mr-2" @click="handleEditArticle(article.id)">
                   Edit
                 </v-btn>
-                <v-btn color="error" variant="tonal" size="small" class="text-none font-weight-bold rounded-lg" @click="triggerArticleAction('Deleting', article.id)">
+                <v-btn color="error" variant="tonal" size="small" class="text-none font-weight-bold rounded-lg" @click="handleDeleteArticle(article.id)">
                   Delete
                 </v-btn>
               </div>
@@ -335,7 +459,7 @@ onMounted(() => {
           <p class="text-body-1 text-medium-emphasis mb-6 mx-auto" style="max-width: 450px;">
             Whether it's a guide to surviving finals or a review of local housing, your peers want to hear from you.
           </p>
-          <v-btn color="blue" variant="flat" size="large" class="text-none font-weight-bold rounded-lg px-8" @click="triggerArticleAction('Drafting New')">
+          <v-btn to="/newArticle" color="blue" variant="flat" size="large" class="text-none font-weight-bold rounded-lg px-8">
             Write Your First Article
           </v-btn>
         </v-card>
@@ -360,10 +484,10 @@ onMounted(() => {
                 <div class="text-body-1 font-weight-black text-primary mb-4">{{ product.price }}</div>
                 
                 <div class="mt-auto d-flex border-t border-opacity-20 pt-3">
-                  <v-btn flex-grow-1 color="primary" variant="tonal" size="small" class="text-none font-weight-bold rounded-lg mr-2" @click="triggerProductAction('Editing', product.id)">
+                  <v-btn flex-grow-1 color="primary" variant="tonal" size="small" class="text-none font-weight-bold rounded-lg mr-2" @click="handleEditProduct(product.id)">
                     <v-icon start icon="mdi-pencil" size="16"></v-icon> Edit
                   </v-btn>
-                  <v-btn icon="mdi-trash-can-outline" variant="tonal" color="error" size="small" class="rounded-lg shrink-0" @click="triggerProductAction('Deleting', product.id)"></v-btn>
+                  <v-btn icon="mdi-trash-can-outline" variant="tonal" color="error" size="small" class="rounded-lg shrink-0" @click="handleDeleteProduct(product.id)"></v-btn>
                 </div>
               </div>
             </v-card>
@@ -378,7 +502,7 @@ onMounted(() => {
           <p class="text-body-1 text-medium-emphasis mb-6 mx-auto" style="max-width: 400px;">
             Got old textbooks, electronics, or dorm gear? List your first item and start making money today.
           </p>
-          <v-btn color="primary" variant="flat" size="large" class="text-none font-weight-bold rounded-lg px-8" @click="triggerProductAction('Adding New')">
+          <v-btn to="/addProduct" color="primary" variant="flat" size="large" class="text-none font-weight-bold rounded-lg px-8">
             Add Your First Product
           </v-btn>
         </v-card>

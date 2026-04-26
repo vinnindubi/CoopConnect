@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\HasApiTokens;
+use App\Models\MarketplaceProduct;
 use Laravel\Passport\Contracts\OAuthenticatable;
 class User extends Authenticatable
 {
@@ -55,6 +56,11 @@ class User extends Authenticatable
                 -> withPivot('role','title')
                 -> withTimestamps();
   }
+  public function marketplaceProducts()
+    {
+        
+        return $this->hasMany(MarketplaceProduct::class, 'user_id'); 
+    }
     /**
      * Get the attributes that should be cast.
      *

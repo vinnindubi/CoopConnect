@@ -150,29 +150,19 @@ public function store(Request $request){
             'post' => $post
         ], 201);
     }
-public function toggleMembership(Request $request, $id)
+public function toggleMembership(Group $group)
     {
-        $group = Group::findOrFail($id);
-        
-        // This will automatically grab the user via Passport's Bearer token
-        $user = $request->user(); 
+        // This single line checks the pivot table. 
+        // If the user is missing, it attaches them. If they exist, it detaches them.
+        $result = $group->members()->toggle(auth()->id());
 
-        $isMember = $group->members()->where('user_id', $user->id)->exists();
+        // $result['attached'] will contain the ID if they just joined
+        $hasJoined = count($result['attached']) > 0;
 
-        if ($isMember) {
-            $group->members()->detach($user->id);
-            $message = 'You have left the group.';
-            $newRole = null;
-        } else {
-            $group->members()->attach($user->id, ['role' => 'member']);
-            $message = 'You have successfully joined the group.';
-            $newRole = 'member';
-        }
-
+        // Return a clean response to Vue so it can update the UI
         return response()->json([
-            'message' => $message,
-            'currentUserRole' => $newRole,
-            'newMembersCount' => $group->members()->count()
+            'message' => $hasJoined ? 'Successfully joined the group!' : 'You have left the group.',
+            'is_member' => $hasJoined
         ]);
     }
 

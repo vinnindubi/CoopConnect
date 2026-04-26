@@ -49,9 +49,9 @@ onMounted(() => {
           <v-tab value="adverts" class="text-none font-weight-bold">
             <v-icon start>mdi-bulletin-board</v-icon> Advertisements
           </v-tab>
-          <v-tab value="inquery" class="text-none font-weight-bold">
+          <!-- <v-tab value="inquery" class="text-none font-weight-bold">
             <v-icon start>mdi-message-question </v-icon> Inquiry
-          </v-tab>
+          </v-tab> -->
         </v-tabs>
       </div>
 
