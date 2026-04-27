@@ -13,8 +13,6 @@ const quickLinks = [
 ];
 
 const supportLinks = [
-  { name: 'Help Center', route: '/help' },
-  { name: 'Safety & Trust', route: '/safety' },
   { name: 'Report an Issue', route:'/feedback' },
   { name: 'Leave Feedback', route: '/feedback' }
 ];

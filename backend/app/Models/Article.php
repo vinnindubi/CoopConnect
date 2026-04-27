@@ -15,9 +15,10 @@ class Article extends Model
         'image',
         'user_id'];
 
-  public function comments(){
-    return $this->hasMany(Comment::class);
-  }
+  public function comments()
+{
+    return $this->hasMany(Comment::class)->latest(); // 'latest' orders them newest first
+}
   public function author()
     {
         // Links to the user who wrote it

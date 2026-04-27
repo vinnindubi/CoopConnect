@@ -70,4 +70,8 @@ export const createProduct = (data: object) => {
 };
 export const toggleClubMembership = (groupId: number) => {
   return apiClient.post(`/groups/${groupId}/toggle-membership`);
+}; // currently not working!!!
+export const sendFeedback = (data: object) => {
+  // Back to a standard POST request!
+  return apiClient.post('/user/feedback', data);
 };

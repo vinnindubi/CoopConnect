@@ -28,12 +28,13 @@ import Donate from '@/components/pages/users/Donate.vue';
 import SellerProfile from '@/components/pages/users/SellerProfile.vue';
 import EditArticle from '@/components/pages/forms/EditArticle.vue';
 import EditProduct from '@/components/pages/forms/EditProduct.vue';
+import ViewArticle from '@/components/pages/forms/ViewArticle.vue';
 
 const routes=[{
     path:'/',
     component:DefaultLayout,
     children:[ 
-        {path:'home',name:'Home',component:Dashboard},
+        {path:'/home',name:'Home',component:Dashboard},
         {path:'events',name:'Events',component:Events},
         {path:'articles',name:'Articles',component: Articles},
         {path:'forums',name:'Forums',component:Forum},
@@ -52,7 +53,8 @@ const routes=[{
         {path:'/donate',name:'Donations',component:Donate},
         { path: '/seller/:id', component: SellerProfile },
         {path:'/editArticle/:id',name:'EditArticle', component:EditArticle},
-        {path:'/editProduct/:id',name:'EditProduct',component:EditProduct}
+        {path:'/editProduct/:id',name:'EditProduct',component:EditProduct},
+        {path:'/articles/:id',name:'ViewArticle',component: ViewArticle}
     ]
     },
     {

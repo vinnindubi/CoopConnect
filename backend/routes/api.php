@@ -9,6 +9,7 @@ use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\StudentDashboardController;
 use App\Http\Controllers\MarketplaceController;
 use App\Http\Controllers\ForumController;
+use App\Http\Controllers\CommentController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -107,4 +108,8 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/forum/{post}/upvote', [ForumController::class, 'upvote']);
     Route::put('/forum/{post}', [ForumController::class, 'update']);
     Route::delete('/forum/{post}', [ForumController::class, 'destroy']);
+
+    Route::post('/user/feedback', [App\Http\Controllers\AuthController::class, 'storeFeedback']);
+    Route::post('/articles/{article}/comments', [CommentController::class, 'store']);
+    Route::get('/articles/{article}/comments', [CommentController::class, 'index']);
 });

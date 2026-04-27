@@ -49,7 +49,7 @@ onMounted(() => {
     <v-app-bar-title class="cursor-pointer" @click="$router.push('/')">CoopConnect</v-app-bar-title>
     <v-spacer/>
     
-    <!-- <v-btn icon variant="text">
+    <v-btn icon variant="text">
       <v-icon>mdi-bell-outline</v-icon>
       <v-badge color="red" content="3" floating></v-badge>
     </v-btn>
@@ -58,7 +58,7 @@ onMounted(() => {
     </v-btn>
     <v-btn icon variant="text">
       <v-icon>mdi-cog-outline</v-icon>
-    </v-btn> -->
+    </v-btn>
 
     <v-btn icon variant="text" @click="toggleTheme">
       <v-icon>{{ darkTheme ? 'mdi-weather-sunny' : 'mdi-weather-night' }}</v-icon>

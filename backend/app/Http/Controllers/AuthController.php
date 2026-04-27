@@ -267,4 +267,33 @@ public function destroyProduct(MarketplaceProduct $item)
             'data' => $product
         ], 201); // 201 is the standard HTTP status code for "Created"
     }
+    public function storeFeedback(Request $request)
+    {
+        $validated = $request->validate([
+            'category' => 'required|string',
+            'rating' => 'nullable|integer|min:1|max:5',
+            'details' => 'required|string',
+            'attachment_path' => 'nullable|url', // Validate that it is a proper link!
+            'is_anonymous' => 'required|boolean',
+            'allow_contact' => 'required|boolean',
+        ]);
+
+        $userId = $validated['is_anonymous'] ? null : auth()->id();
+
+        // No file storage logic needed. Just dump the validated data straight into the DB!
+        $feedback = \App\Models\Feedback::create([
+            'user_id' => $userId,
+            'category' => $validated['category'],
+            'rating' => $validated['rating'],
+            'details' => $validated['details'],
+            'attachment_path' => $validated['attachment_path'], // Save the link directly
+            'is_anonymous' => $validated['is_anonymous'],
+            'allow_contact' => $validated['allow_contact'],
+        ]);
+
+        return response()->json([
+            'message' => 'Feedback submitted successfully!',
+            'data' => $feedback
+        ], 201);
+    }
  }

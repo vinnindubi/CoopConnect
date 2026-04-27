@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-
+import { sendFeedback } from '@/services/authService';
 // 1. Form State
 const feedbackCategory = ref('Feature Suggestion');
 const rating = ref(0);
 const feedbackDetails = ref('');
-const attachment = ref<File | null>(null);
+const attachmentUrl = ref('');
 const isAnonymous = ref(false);
 const allowContact = ref(true);
 
@@ -22,22 +22,36 @@ const categories = ref([
 ]);
 
 // 4. Submission Handler
-const submitFeedback = () => {
+const submitFeedback = async () => {
   if (!feedbackDetails.value) return; 
   
   isSubmitting.value = true;
   
-  setTimeout(() => {
-    isSubmitting.value = false;
-    isSuccess.value = true;
-  }, 1500);
-};
+  try {
+    // Look how much cleaner this is! Just standard JSON.
+    const payload = {
+      category: feedbackCategory.value,
+      details: feedbackDetails.value,
+      is_anonymous: isAnonymous.value,
+      allow_contact: allowContact.value,
+      rating: feedbackCategory.value === 'General Review' ? rating.value : null,
+      attachment_path: attachmentUrl.value || null // Send the URL string
+    };
 
+    await sendFeedback(payload);
+    isSuccess.value = true;
+
+  } catch (error) {
+    console.error("Feedback submission failed:", error);
+  } finally {
+    isSubmitting.value = false;
+  }
+};
 const submitAnother = () => {
   isSuccess.value = false;
   feedbackDetails.value = '';
   rating.value = 0;
-  attachment.value = null;
+  attachmentUrl.value = '';
 };
 </script>
 
@@ -119,19 +133,17 @@ const submitAnother = () => {
 
             <div class="mb-8">
               <label class="text-subtitle-1 font-weight-bold d-block mb-2 text-medium-emphasis">
-                {{ feedbackCategory === 'General Review' ? '4.' : '3.' }} Attach a Screenshot (Optional)
+  {{ feedbackCategory === 'General Review' ? '4.' : '3.' }} Attach a Screenshot (Image URL)
               </label>
-              <v-file-input
-                v-model="attachment"
+              <v-text-field
+                v-model="attachmentUrl"
                 variant="outlined"
                 density="compact"
-                prepend-inner-icon="mdi-camera-outline"
-                prepend-icon=""
-                placeholder="Drop an image here or click to browse"
-                accept="image/*"
+                prepend-inner-icon="mdi-link"
+                placeholder="https://images.unsplash.com/..."
                 hide-details
                 class="rounded-lg"
-              ></v-file-input>
+              ></v-text-field>
             </div>
 
             <div class="mb-8">

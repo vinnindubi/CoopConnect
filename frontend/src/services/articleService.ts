@@ -32,6 +32,17 @@ export default {
    * Matches Route::get('/users/{id}/articles')
    */
   getUserArticles(userId: number | string) {
-    return apiClient.get(`/users/${userId}`);
-  }
-};
+    return apiClient.get(`/users/${userId}`)
+  },
+  // ==========================================
+// FORUM COMMENTS API
+// ==========================================
+
+getComments (articleId: number | string)  {
+  return apiClient.get(`/articles/${articleId}/comments`)
+},
+
+postComment(articleId: number | string, data: object)  {
+  return apiClient.post(`/articles/${articleId}/comments`, data)
+
+}}
