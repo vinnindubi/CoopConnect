@@ -75,3 +75,11 @@ export const sendFeedback = (data: object) => {
   // Back to a standard POST request!
   return apiClient.post('/user/feedback', data);
 };
+// --- Community Post Replies ---
+export const getPostReplies = (postId: number) => {
+  return apiClient.get(`/posts/${postId}/replies`);
+};
+
+export const createPostReply = (postId: number, data: { content: string }) => {
+  return apiClient.post(`/posts/${postId}/replies`, data);
+};

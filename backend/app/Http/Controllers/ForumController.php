@@ -12,7 +12,7 @@ class ForumController extends Controller
 {
     public function index(Request $request)
     {
-        $query = ForumPost::with('author')->withCount('comments')->latest();
+       $query = ForumPost::with('author')->withCount('replies')->latest();
 
         // Handle Category Filtering from Vue
         if ($request->has('category') && $request->category !== 'All') {
@@ -58,7 +58,7 @@ class ForumController extends Controller
 
         return response()->json([
             'message' => 'Topic posted successfully',
-            'post' => new ForumPostResource($post->load('author')->loadCount('comments'))
+            'post' => new ForumPostResource($post->load('author')->loadCount('replies'))
         ], 201);
     }
 

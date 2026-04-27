@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { ref ,inject, onMounted } from "vue";
 import { useTheme } from "vuetify";
+import { useRouter } from 'vue-router';
 import { logoutUser,getUserProfile } from "@/services/authService";
 // get sidebar toggle function from App.vue
+const router = useRouter();
 const toggleSidebar = inject("toggleSidebar") as () => void;
 const darkTheme= ref(true)
 const theme = useTheme()
@@ -24,17 +26,23 @@ const getUser = async () => {
 
   }
 }
-const handleLogOut= async ()=>{
-  try{
-    const response = await logoutUser();
+const handleLogOut = async () => {
+  try {
+    // 1. Tell the Laravel backend to invalidate the session/token
+    await logoutUser(); 
+  } catch (error) {
+    // Even if the server throws an error (e.g., token already expired),
+    // we still want to clean up the frontend.
+    console.error("Server logout error:", error);
+  } finally {
+    // 2. Erase the token from the browser (Matches your 'auth_token' key!)
+    localStorage.removeItem('auth_token');
     
-
-  }catch(error){
-
-  }finally{
-
+    // Also remove the user profile data if you stored it
+    localStorage.removeItem('user'); 
+    router.push('/login'); 
   }
-}
+};
 onMounted(() => {
   getUser();
   });
@@ -73,7 +81,10 @@ onMounted(() => {
       <v-list>
         <v-list-item prepend-icon="mdi-account" to="/profile">Profile</v-list-item>
         <v-list-item prepend-icon="mdi-cog">Settings</v-list-item>
-        <v-list-item @click="handleLogOut" prepend-icon="mdi-logout">LogOut</v-list-item>
+        <v-divider></v-divider>
+        <v-list-item @click="handleLogOut" prepend-icon="mdi-logout" base-color="error">
+          LogOut
+        </v-list-item>
       </v-list>
     </v-menu>
   </v-app-bar>

@@ -6,6 +6,7 @@ use App\Http\Controllers\GroupController;
 use App\Http\Controllers\MpesaController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\AnnouncementController;
+use App\Http\Controllers\ReplyController;
 use App\Http\Controllers\StudentDashboardController;
 use App\Http\Controllers\MarketplaceController;
 use App\Http\Controllers\ForumController;
@@ -26,7 +27,7 @@ Route::get('/groups', [GroupController::class, 'index']);
 Route::get('/groups/{group}', [GroupController::class, 'show']);
 
 Route::get('/events', [EventController::class, 'index']);
-
+Route::get('/posts/{post}/replies', [ReplyController::class, 'index']);
 // ==========================================
 // PROTECTED ROUTES (Requires Passport Token)
 // ==========================================
@@ -112,4 +113,6 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/user/feedback', [App\Http\Controllers\AuthController::class, 'storeFeedback']);
     Route::post('/articles/{article}/comments', [CommentController::class, 'store']);
     Route::get('/articles/{article}/comments', [CommentController::class, 'index']);
+
+    Route::post('/posts/{post}/replies', [ReplyController::class, 'store']);
 });

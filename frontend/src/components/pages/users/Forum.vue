@@ -18,6 +18,7 @@ const {
   newTopic,
   rules,
   submitTopic,
+  submitReply,
   upvoteThread,
   deleteThread
 } = useForum();

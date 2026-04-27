@@ -1,6 +1,7 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { forumService } from '../services/forumService';
 import { getUserProfile } from '../services/authService';
+import { getPostReplies, createPostReply } from '@/services/authService';
 
 export function useForum() {
   // --- Global State ---
@@ -8,7 +9,6 @@ export function useForum() {
   const threads = ref<any[]>([]);
   const trendingTags = ref<any[]>([]);
   const isLoading = ref(true);
-  
 
   // --- Filters ---
   const searchQuery = ref('');
@@ -44,13 +44,22 @@ export function useForum() {
     debounceTimer = setTimeout(() => fetchThreads(), 300); 
   });
 
+  const fetchCurrentUser = async () => {
+    try {
+      const response = await getUserProfile();
+      currentUser.value = response.data; 
+    } catch (error) {
+      console.error('Failed to fetch user profile:', error);
+    }
+  };
+
   // ==========================================
-  // CREATE (Submit via Service)
+  // CREATE TOPICS
   // ==========================================
   const showNewPostDialog = ref(false);
   const isSubmitting = ref(false);
   const formRef = ref();
-  const newTopic = ref({ title: '', category: '', excerpt: '',isAnonymous: false });
+  const newTopic = ref({ title: '', category: '', excerpt: '', isAnonymous: false });
   
   const postableCategories = computed(() => categories.filter(c => c !== 'All'));
 
@@ -65,7 +74,6 @@ export function useForum() {
 
     isSubmitting.value = true;
     try {
-      // Map it to snake_case for the Laravel backend
       const payload = {
         title: newTopic.value.title,
         category: newTopic.value.category,
@@ -77,7 +85,6 @@ export function useForum() {
       await fetchThreads(); 
       
       showNewPostDialog.value = false;
-      // Reset everything, including the toggle!
       newTopic.value = { title: '', category: '', excerpt: '', isAnonymous: false };
       formRef.value.reset();
     } catch (error) {
@@ -87,19 +94,61 @@ export function useForum() {
     }
   };
 
+  // ==========================================
+  // REPLIES LOGIC (Updated for Accordion)
+  // ==========================================
+
+  // 1. Fetch existing replies for a specific thread
+  const loadReplies = async (postId: number) => {
+    try {
+      const res = await getPostReplies(postId);
+      const fetchedReplies = res.data?.data || res.data;
+      
+      // Find the thread in our local array and attach the replies to it
+      const thread = threads.value.find(t => t.id === postId);
+      if (thread) {
+        thread.replies = fetchedReplies;
+      }
+    } catch (err) {
+      console.error("Failed to load replies:", err);
+    }
+  };
+
+  // 2. Submit a new reply to a specific thread
+  const submitReply = async (postId: number, content: string) => {
+    try {
+      const res = await createPostReply(postId, { content });
+      const savedReply = res.data?.data || res.data;
+      
+      // Instantly push it into the local thread so the UI updates without refreshing
+      const thread = threads.value.find(t => t.id === postId);
+      if (thread) {
+        if (!thread.replies) thread.replies = [];
+        thread.replies.push(savedReply);
+        
+        // Increase the comment count visually
+        thread.comments = (thread.comments || 0) + 1;
+      }
+      return savedReply;
+    } catch (err) {
+      console.error("Reply submission failed:", err);
+      throw err; // Throw it so the component can stop its loading spinner
+    }
+  };
+
 
   // ==========================================
-  // UPDATE & DELETE (via Service)
+  // UPDATE & DELETE
   // ==========================================
   const upvoteThread = async (id: number) => {
     const thread = threads.value.find(t => t.id === id);
-    if (thread) thread.upvotes++; // Optimistic UI update for instant feedback
+    if (thread) thread.upvotes++; 
 
     try {
       await forumService.upvoteThread(id);
     } catch (error) {
       console.error('Error upvoting:', error);
-      if (thread) thread.upvotes--; // Revert if the API call fails
+      if (thread) thread.upvotes--; 
     }
   };
 
@@ -108,19 +157,9 @@ export function useForum() {
 
     try {
       await forumService.deleteThread(id);
-      threads.value = threads.value.filter(t => t.id !== id); // Instantly remove from UI
+      threads.value = threads.value.filter(t => t.id !== id); 
     } catch (error) {
       console.error('Error deleting topic:', error);
-    }
-  };
-  const fetchCurrentUser = async () => {
-    try {
-      const response = await getUserProfile();
-      // Since you use apiClient (Axios), the user data is inside response.data
-      currentUser.value = response.data; 
-    } catch (error) {
-      console.error('Failed to fetch user profile:', error);
-      // Optional: Handle redirect to login if they aren't authenticated
     }
   };
 
@@ -131,11 +170,12 @@ export function useForum() {
     fetchTrending();
   });
 
-  // Expose everything the Vue template needs to render and interact
+  // Expose everything the Vue template needs
   return {
     currentUser,
     threads, trendingTags, isLoading, searchQuery, selectedCategory,
     categories, postableCategories, showNewPostDialog, isSubmitting,
-    formRef, newTopic, rules, submitTopic, upvoteThread, deleteThread
+    formRef, newTopic, rules, submitTopic, upvoteThread, deleteThread, 
+    submitReply, loadReplies 
   };
 }

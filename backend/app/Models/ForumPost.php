@@ -24,10 +24,10 @@ class ForumPost extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function comments()
-    {
-        return $this->hasMany(ForumComment::class);
-    }
+    public function replies()
+{
+    return $this->hasMany(Reply::class, 'post_id'); 
+}
 
     // This dynamically generates the "2 hours ago" format your Vue expects
     public function getTimeAgoAttribute()

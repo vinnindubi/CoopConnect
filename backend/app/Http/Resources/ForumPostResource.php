@@ -28,7 +28,7 @@ class ForumPostResource extends JsonResource
             'excerpt' => $this->excerpt,
             'category' => $this->category,
             'upvotes' => $this->upvotes,
-            'comments' => $this->comments_count ?? 0, // Provided by withCount()
+            'comments' => $this->replies_count ?? 0, // Provided by withCount()
             'timeAgo' => $this->time_ago,
             'hot' => $this->is_hot,
             'author' => $authorData,
